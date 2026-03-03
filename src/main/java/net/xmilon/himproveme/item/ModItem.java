@@ -72,6 +72,36 @@ public class ModItem {
     public static final Item DODO_SPAWN_EGG = registerItem("dodo_spawn_egg",
             new SpawnEggItem(ModEntities.DODO, 0x945f0b, 0x56401e, new Item.Settings()));
 
+    public static final Item ENDER_INGOT = registerItem("ender_ingot", new Item(new Item.Settings()));
+
+    public static final Item RAW_ENDER_ESSENCE = registerItem("raw_ender_essence", new Item(new Item.Settings()));
+
+    // - - - - - - - - - - - - - -  ENDER ITEMS
+
+    public static final Item ENDER_SWORD = registerItem("ender_sword",
+            new SwordItem(ModToolMaterials.ENDER_INGOT, new Item.Settings()
+                    .attributeModifiers(SwordItem.createAttributeModifiers(ModToolMaterials.ENDER_INGOT, 5, -2.0f))));
+
+    public static final Item ENDER_PICKAXE = registerItem("ender_pickaxe",
+            new PickaxeItem(ModToolMaterials.ENDER_INGOT, new Item.Settings()
+                    .attributeModifiers(PickaxeItem.createAttributeModifiers(ModToolMaterials.ENDER_INGOT, 3, -2.8f))));
+
+    public static final Item ENDER_AXE = registerItem("ender_axe",
+            new AxeItem(ModToolMaterials.ENDER_INGOT, new Item.Settings()
+                    .attributeModifiers(AxeItem.createAttributeModifiers(ModToolMaterials.ENDER_INGOT, 10, -3.1f))));
+
+    public static final Item ENDER_SHOVEL = registerItem("ender_shovel",
+            new ShovelItem(ModToolMaterials.ENDER_INGOT, new Item.Settings()
+                    .attributeModifiers(ShovelItem.createAttributeModifiers(ModToolMaterials.ENDER_INGOT, 1, -3.0f))));
+
+    public static final Item ENDER_HOE = registerItem("ender_hoe",
+            new HoeItem(ModToolMaterials.ENDER_INGOT, new Item.Settings()
+                    .attributeModifiers(HoeItem.createAttributeModifiers(ModToolMaterials.ENDER_INGOT, 0, -3.5f))));
+
+
+
+    // - - - - - - - - - - - -
+
     public static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, Identifier.of(HimProveMe.MOD_ID, name), item);
     }

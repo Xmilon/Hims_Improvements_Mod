@@ -27,6 +27,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 		registerCraftingRecipes(exporter);
 		registerStaffRecipes(exporter);
 		registerBundle(exporter);
+		registerEnderIngot(exporter);
 	}
 
 	private void registerGemRecipes(RecipeExporter exporter) {
@@ -117,7 +118,29 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 				.input('C', Items.CHEST)
 				.input('#', Items.LEATHER)
 				.input('-', Items.STRING)
-				.criterion(hasItem(Items.LEATHER), conditionsFromItem(Items.LEATHER))
+				.criterion(hasItem(Items.CHEST), conditionsFromItem(Items.CHEST))
+				.offerTo(exporter);
+	}
+
+	private void registerEnderIngot(RecipeExporter exporter) {
+		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItem.ENDER_INGOT)
+				.pattern("###")
+				.pattern("#C#")
+				.pattern("###")
+				.input('C', Items.NETHERITE_INGOT)
+				.input('#', ModItem.ENDER_ESSENCE)
+				.criterion(hasItem(ModItem.ENDER_ESSENCE), conditionsFromItem(ModItem.ENDER_ESSENCE))
+				.offerTo(exporter);
+	}
+
+	private void registerEnderEssence(RecipeExporter exporter) {
+		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItem.ENDER_ESSENCE)
+				.pattern("###")
+				.pattern("#C#")
+				.pattern("###")
+				.input('C', Items.CHORUS_FLOWER)
+				.input('#', ModItem.RAW_ENDER_ESSENCE)
+				.criterion(hasItem(ModItem.RAW_ENDER_ESSENCE), conditionsFromItem(ModItem.RAW_ENDER_ESSENCE))
 				.offerTo(exporter);
 	}
 }

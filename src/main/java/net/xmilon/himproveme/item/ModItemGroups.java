@@ -33,8 +33,15 @@ public class ModItemGroups {
                         entries.add(ModItem.ENDER_BUNDLE);
                         entries.add(Items.BUNDLE);
                         entries.add(ModItem.BREEZE_STAFF);
+                        entries.add(ModItem.ENDER_STAFF);
                         entries.add(ModItem.ENDER_ESSENCE);
                         entries.add(ModItem.DODO_SPAWN_EGG);
+                        entries.add(ModItem.ENDER_INGOT);
+                        entries.add(ModItem.ENDER_SWORD);
+                        entries.add(ModItem.ENDER_PICKAXE);
+                        entries.add(ModItem.ENDER_AXE);
+                        entries.add(ModItem.ENDER_SHOVEL);
+                        entries.add(ModItem.ENDER_HOE);
 
                     }).build());
 

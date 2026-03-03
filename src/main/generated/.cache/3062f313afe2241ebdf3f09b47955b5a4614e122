@@ -1,3 +1,4 @@
-// 1.21.1	2026-03-03T16:46:02.8778753	HimProveMe/Tags for minecraft:block
+// 1.21.1	2026-03-03T23:14:05.3226894	HimProveMe/Tags for minecraft:block
 409ac21fae0c673cd06837dc817a0fb519025004 data\minecraft\tags\block\needs_iron_tool.json
+32b13946c4cd1f944b029659ccce5fcb2adad4ff data\himproveme\tags\block\needs_ender_tool.json
 0eee915f506d332e975cfa0a689666c10a872557 data\minecraft\tags\block\mineable\pickaxe.json

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "himproveme:ender_ingot"
+  },
+  "base": {
+    "item": "minecraft:netherite_pickaxe"
+  },
+  "result": {
+    "count": 1,
+    "id": "himproveme:ender_pickaxe"
+  },
+  "template": {
+    "item": "himproveme:upgrade_gem"
+  }
+}

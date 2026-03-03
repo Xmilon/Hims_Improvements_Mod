@@ -4,12 +4,19 @@
   //"perk.himproveme.DESC": "DESC.",
   //"perk.himproveme.FUNCTION": "eg: Lava Swimming",
 
+  "item.himproveme.ender_sword": "Ender Sword",
+  "item.himproveme.ender_pickaxe": "Ender Pickaxe",
+  "item.himproveme.ender_axe": "Ender Axe",
+  "item.himproveme.ender_shovel": "Ender Shovel",
+  "item.himproveme.ender_hoe": "Ender Hoe",
 
+  "item.himproveme.raw_ender_essence": "Raw Ender Essence",
 
 
   "item.himproveme.upgrade_gem": "Upgrade Gem",
   "item.himproveme.raw_upgrade_gem": "Raw Upgrade Gem",
   "item.himproveme.upgrade_gem_dust": "Upgrade Gem Dust",
+  "item.himproveme.ender_ingot": "Ender Ingot",
   "item.himproveme.chisel": "Transformation Rod",
   "item.himproveme.key": "Key",
   "item.himproveme.ender_essence": "Ender Essence",

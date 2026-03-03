@@ -1,5 +1,28 @@
 {
   "parent": "minecraft:item/generated",
+  "overrides": [
+    {
+      "model": "himproveme:item/spectral_bow_pulling_0",
+      "predicate": {
+        "pull": 0.0,
+        "pulling": 1.0
+      }
+    },
+    {
+      "model": "himproveme:item/spectral_bow_pulling_1",
+      "predicate": {
+        "pull": 0.65,
+        "pulling": 1.0
+      }
+    },
+    {
+      "model": "himproveme:item/spectral_bow_pulling_2",
+      "predicate": {
+        "pull": 0.9,
+        "pulling": 1.0
+      }
+    }
+  ],
   "textures": {
     "layer0": "himproveme:item/spectral_bow"
   }

@@ -40,8 +40,8 @@ public class MagicBlock extends Block {
                 world.playSound(entity, pos, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.BLOCKS, 4f, 3f);
             }else
 
-            if(ItemEntity.getStack().getItem() == Items.ENDER_PEARL){
-                ItemEntity.setStack(new ItemStack(ModItem.ENDER_ESSENCE, ItemEntity.getStack().getCount()));
+            if(ItemEntity.getStack().getItem() == Items.ENDER_EYE){
+                ItemEntity.setStack(new ItemStack(ModItem.RAW_ENDER_ESSENCE, ItemEntity.getStack().getCount()));
                 world.playSound(entity, pos, SoundEvents.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.BLOCKS, 4f, 1.8f);
 
             }

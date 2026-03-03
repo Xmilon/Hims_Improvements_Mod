@@ -1,4 +1,4 @@
-// 1.21.1	2026-03-03T16:46:02.8748245	HimProveMe/Recipes
+// 1.21.1	2026-03-03T23:14:05.3131594	HimProveMe/Recipes
 bc09258aef46e75b6bee12bcc8a0a9030d5cbed0 data\himproveme\advancement\recipes\misc\dead_nether_core.json
 739535f496001a2bc6008b6a71ddfe69d17ea99e data\himproveme\recipe\upgrade_gem_block.json
 bd9cf1ab11bf4a43d7401adf175e30c9e7264d85 data\himproveme\advancement\recipes\misc\magic_block.json
@@ -6,15 +6,17 @@ bd9cf1ab11bf4a43d7401adf175e30c9e7264d85 data\himproveme\advancement\recipes\mis
 18e574fb5dce758b64ef3bd6b06e65dd57f94cbd data\himproveme\advancement\recipes\misc\breeze_staff.json
 f965dee07536c24f62ffe565a20fced04a818fe6 data\himproveme\recipe\magic_block.json
 445f41a0777387348423c0217a09ef6599ae7841 data\himproveme\advancement\recipes\building_blocks\upgrade_gem_block.json
-9565e358bb9833a72e8988da47df7a4b5a5c85f5 data\himproveme\recipe\raw_upgrade_gem.json
 7126022484e5ed73c712f8824b423496ab312057 data\himproveme\recipe\key.json
-a7d55053f80587b8fd209635f1d59c569ea2a102 data\himproveme\advancement\recipes\misc\bundle.json
+9565e358bb9833a72e8988da47df7a4b5a5c85f5 data\himproveme\recipe\raw_upgrade_gem.json
+e0ba8e81113e89832923939781aba5f5749351ed data\himproveme\advancement\recipes\misc\bundle.json
 fad0c21fd0ee04511c87af0bfb1a1aacea695a9a data\himproveme\advancement\recipes\misc\raw_upgrade_gem.json
 0b41048a91071c31673209e77bdd4e74dc908b8b data\himproveme\recipe\bundle.json
 2b03992c0dd4e4f07e08c05b5b3e424422888ecc data\himproveme\recipe\dead_nether_core.json
 d015ad56d33944809ab280dcb14868d00d244346 data\himproveme\recipe\upgrade_gem.json
 5ba58b047a8cb84bbd4f63395f3dad3720ed8c80 data\himproveme\advancement\recipes\misc\upgrade_gem.json
 38291464b232a6111a36dc7745a31d8dd63a14b8 data\himproveme\recipe\ender_staff.json
+7c6f88db9137a5e0a428b6055963f419d14f988c data\himproveme\recipe\ender_ingot.json
+5268ef57feb7fd51234e70a8f2fb42e3374599ba data\himproveme\advancement\recipes\misc\ender_ingot.json
 36f5a2b78d33cd6d08cbdc07b6a396d366a0a941 data\himproveme\advancement\recipes\misc\upgrade_gem_from_blasting_raw_upgrade_gem.json
 c363c8adba591f4b63596f3310e354f551095b77 data\himproveme\advancement\recipes\misc\key.json
 d1cf71854cc0313b2bedbe3c8dcc6ccb84797e20 data\himproveme\recipe\upgrade_gem_from_blasting_raw_upgrade_gem.json
