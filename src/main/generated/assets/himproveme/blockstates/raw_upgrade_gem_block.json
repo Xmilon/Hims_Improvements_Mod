@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "himproveme:block/raw_upgrade_gem_block"
+    }
+  }
+}

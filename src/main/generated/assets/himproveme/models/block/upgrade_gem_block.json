@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "himproveme:block/upgrade_gem_block"
+  }
+}

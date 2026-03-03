@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "himproveme:upgrade_gem_dust"
+    },
+    {
+      "item": "himproveme:upgrade_gem_dust"
+    },
+    {
+      "item": "himproveme:upgrade_gem_dust"
+    },
+    {
+      "item": "himproveme:upgrade_gem_dust"
+    },
+    {
+      "item": "minecraft:diamond"
+    },
+    {
+      "item": "minecraft:diamond"
+    },
+    {
+      "item": "minecraft:diamond"
+    },
+    {
+      "item": "minecraft:diamond"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:raw_upgrade_gem"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "perk.lava_swim_unlock": {
+    "subtitle": "perk.himproveme.lava_swim",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup"
+      }
+    ]
+  },
+  "perk.fireproof_unlock": {
+    "subtitle": "perk.himproveme.fireproof",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "pitch": 1.1
+      }
+    ]
+  },
+  "fail_open_0": {
+    "subtitle": "chestlock.himproveme.denied",
+    "sounds": [
+      {
+        "name": "himproveme:item/key/fail_open_0"
+      }
+    ]
+  },
+  "lock_key": {
+    "subtitle": "chestlock.himproveme.locked",
+    "sounds": [
+      {
+        "name": "himproveme:item/key/lock_key_0"
+      },
+      {
+        "name": "himproveme:item/key/lock_key_1"
+      }
+    ]
+  }
+}

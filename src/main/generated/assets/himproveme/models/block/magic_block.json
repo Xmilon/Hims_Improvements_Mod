@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "himproveme:block/magic_block_end",
+    "side": "himproveme:block/magic_block_side"
+  }
+}

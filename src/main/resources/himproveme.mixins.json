@@ -1,0 +1,27 @@
+{
+	"required": true,
+	"package": "net.xmilon.himproveme.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ChestBlockEntityLockMixin",
+		"ChestBlockLockMixin",
+		"ExampleMixin",
+		"GenericContainerScreenHandlerMixin",
+		"ItemEntityMixin",
+		"EndermanEntityMixin",
+		"LivingEntityMixin",
+		"PlayerEntityMixin",
+		"PlayerEntityKeepXpMixin",
+		"PlayerExperienceMixin",
+		"PersistentProjectileEntityMixin",
+		"PlayerEntityPerkDataMixin",
+		"ServerPlayerEntityPerkCopyMixin",
+		"ServerPlayerInteractionManagerChestBreakMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

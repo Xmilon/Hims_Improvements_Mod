@@ -1,0 +1,110 @@
+HIMPROVEME COMMANDS + PERK SYSTEM NOTES
+======================================
+
+1) Command Root and Syntax
+--------------------------
+All commands start with:
+/himproveme
+
+Perk commands category:
+/himproveme perk ...
+
+Implemented syntax:
+- Add one perk to one/many players:
+  /himproveme perk add <targets> himproveme <perk_id>
+  Example:
+  /himproveme perk add @a himproveme fireproof
+
+- Remove one perk from one/many players:
+  /himproveme perk remove <targets> himproveme <perk_id>
+  Example:
+  /himproveme perk remove @a himproveme fireproof
+
+- Reset all perks for one/many players:
+  /himproveme perk reset <targets>
+  Example:
+  /himproveme perk reset @a
+
+2) Where Command Syntax Is Registered
+-------------------------------------
+Java class:
+src/main/java/net/xmilon/himproveme/command/HimProveMeCommands.java
+
+This is the class to extend for new command syntax fields.
+Pattern used:
+- registerPerkAction(perkRoot, "action", syntaxTree)
+
+3) Where Command Functions Are Called
+-------------------------------------
+Java class:
+src/main/java/net/xmilon/himproveme/command/HimProveMeCommandFunctions.java
+
+This is the class to extend for new command behavior.
+Each syntax entry in HimProveMeCommands should call a function here.
+
+4) Perk Registry: Single Source of Perk Metadata
+------------------------------------------------
+Java class:
+src/main/java/net/xmilon/himproveme/perk/PerkRegistry.java
+
+Per perk metadata includes:
+- id
+- name/description translation keys
+- category key
+- unlock-function translation key
+- icon item id
+- unlock sound id
+- max level (currently one-time unlock = 1)
+- row and column (grid placement)
+- required perk ids (prerequisites)
+
+5) Perk Functions Assembly Class
+--------------------------------
+Java class:
+src/main/java/net/xmilon/himproveme/perk/PerkFunctions.java
+
+Use this class to assemble gameplay behavior:
+- onUnlock hooks
+- onTick hooks
+
+Unlock hook call path:
+PerkBookNetworking -> PerkFunctions.runUnlock(...)
+
+6) Custom Perk Sounds
+---------------------
+Custom sound folder scaffold:
+src/main/resources/assets/himproveme/sounds/perk/custom/
+
+Drop .ogg files here.
+
+Sound event mapping file:
+src/main/resources/assets/himproveme/sounds.json
+
+Perks reference sound events by id via PerkRegistry.unlockSoundId.
+
+7) Perk UI Background
+---------------------
+Texture used for perk book background:
+src/main/resources/assets/himproveme/textures/gui/perk/perks.png
+
+Code reference constant:
+PERK_BACKGROUND_TEXTURE in RecipeBookWidgetPerkMixin.java
+
+8) Main Files You Will Likely Edit Next
+---------------------------------------
+- src/main/java/net/xmilon/himproveme/command/HimProveMeCommands.java
+- src/main/java/net/xmilon/himproveme/command/HimProveMeCommandFunctions.java
+- src/main/java/net/xmilon/himproveme/perk/PerkRegistry.java
+- src/main/java/net/xmilon/himproveme/perk/PerkFunctions.java
+- src/main/resources/assets/himproveme/lang/en_us.json
+- src/main/resources/assets/himproveme/sounds.json
+
+9) Init Wiring
+--------------
+Registered in:
+src/main/java/net/xmilon/himproveme/HimProveMe.java
+
+Calls:
+- PerkRegistry.registerDefaults()
+- PerkFunctions.registerDefaults()
+- HimProveMeCommands.register()

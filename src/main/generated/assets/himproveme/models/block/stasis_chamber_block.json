@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "himproveme:block/stasis_chamber_block_end",
+    "side": "himproveme:block/stasis_chamber_block_side"
+  }
+}

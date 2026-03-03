@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_life_pearl": {
+      "conditions": {
+        "items": [
+          {
+            "items": "himproveme:life_pearl"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "himproveme:dead_nether_core"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_life_pearl"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "himproveme:dead_nether_core"
+    ]
+  }
+}

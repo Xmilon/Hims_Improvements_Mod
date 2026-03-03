@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:wind_charge"
+  },
+  "base": {
+    "item": "minecraft:bow"
+  },
+  "result": {
+    "count": 1,
+    "id": "himproveme:spectral_bow"
+  },
+  "template": {
+    "item": "himproveme:nether_core"
+  }
+}

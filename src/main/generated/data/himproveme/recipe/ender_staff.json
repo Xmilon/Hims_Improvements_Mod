@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "himproveme:breeze_staff"
+    },
+    {
+      "item": "himproveme:ender_essence"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:ender_staff"
+  }
+}

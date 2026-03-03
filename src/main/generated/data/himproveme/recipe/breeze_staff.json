@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:breeze_rod"
+    },
+    "C": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "pattern": [
+    "  C",
+    " # ",
+    "#  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:breeze_staff"
+  }
+}

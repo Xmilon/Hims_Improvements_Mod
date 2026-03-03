@@ -1,0 +1,33 @@
+{
+  "note": "Placeholder perk filesystem scaffold using vanilla assets.",
+  "perks": [
+    {
+      "id": "himproveme:lava_swim_wip",
+      "category_key": "perk.himproveme.category.wip",
+      "name_key": "perk.himproveme.lava_swim_wip",
+      "description_key": "perk.himproveme.lava_swim_wip.desc",
+      "unlock_function_key": "perk.himproveme.lava_swim_wip.function",
+      "row": 0,
+      "column": 0,
+      "required_perks": [],
+      "icon_item": "minecraft:lava_bucket",
+      "unlock_sound": "himproveme:perk.lava_swim_unlock",
+      "unlock_type": "one_time"
+    },
+    {
+      "id": "himproveme:fireproof",
+      "category_key": "perk.himproveme.category.wip",
+      "name_key": "perk.himproveme.fireproof",
+      "description_key": "perk.himproveme.fireproof.desc",
+      "unlock_function_key": "perk.himproveme.fireproof.function",
+      "row": 0,
+      "column": 2,
+      "required_perks": [
+        "himproveme:lava_swim_wip"
+      ],
+      "icon_item": "minecraft:blaze_powder",
+      "unlock_type": "one_time",
+      "unlock_sound": "himproveme:perk.fireproof_unlock"
+    }
+  ]
+}

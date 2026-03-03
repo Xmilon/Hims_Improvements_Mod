@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:copper_ingot"
+    },
+    "C": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "pattern": [
+    " ##",
+    " #C",
+    " # "
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:key"
+  }
+}

@@ -1,0 +1,65 @@
+MOD_LOG — Him's Improvements Mod Full Change + Discovery Log
+Last updated: 2026-03-01
+
+0) Environment snapshot
+   • Java target: 21 (`tasks.withType(JavaCompile).options.release` + source/target compatibility in `build.gradle`).
+   • Fabric loader 0.18.4, Fabric API 0.116.8+1.21.1, Minecraft 1.21.1, Loom 1.15-SNAPSHOT, Yarn mappings 1.21.1+build.3, mod version 1.0.0.
+   • Data generator entrypoint stub exists (`HimProveMeDataGenerator`) but currently no generated assets.
+
+1) Core blocks and materials
+   • Raw/upgrade gem blocks + ore/deepslate ore spawn under `ModBlocks` and land in the building-blocks creative tab; they require tools and drop XP (UniformIntProvider 2‑5 for ore, 3‑6 for deepslate).
+   • `MagicBlock` and `StasisChamberBlock` are registered with glow/luminance and portal particles, appear alongside the gem blocks, and can be placed to test the Breeze Staff’s special interactions.
+   • Players can convert vanilla blocks with the `ChiselItem`: sneak-right-click stone/cobblestone/deepslate variants, sand, clay, netherrack, end stone, magic block, or stasis chambers to their “bricks”/upgraded versions (see `ChiselItem.CHISEL_MAP`). Discover by crafting the Chisel (visible in the Upgrades tab) and trying it on the listed blocks while sneaking.
+
+2) Item catalog
+   • `upgrade_gem`, `raw_upgrade_gem`, `upgrade_gem_dust` (Smithing template-based) live in the Ingredients tab and feed future upgrades.
+   • `Chisel`, `Key`, `Master Key`, `Life Pearl`, `Dead Nether Core`, `Nether Core`, `Godly Elytra`, `Spectral Bow`, `Breeze Staff`, `Ender Bundle`, plus bundled vanilla `Items.BUNDLE`, appear in the custom `himproveme_items` item group (`ModItemGroups`) with descriptive icons.
+   • `Life Pearl` currently only contributes rarity description but is ready for future effects.
+
+3) Locking & keys
+   • `Key`/`Master Key` use the chest-locking hooks: sneak-right-click a chest (single or double) to lock/unlock it as owner; master keys override with ownerless master locks and bypass other owners (`ChestLocking`). Locked chests display particle/sound feedback, deny open messages, and reveal owner names. Discover by sneaking when interacting with chests, and check `chestlock.himproveme.*` strings for text cues.
+   • `ChestLockDataAccess` mixins inject lock metadata directly into `ChestBlockEntity`.
+
+4) Godly Elytra + boost
+   • `GodlyElytraItem` is fireproof, glinting, and spawns end-rod particles behind the player while worn; right-click `R` (client key binding in `TutorialModClient`) sends a `GodlyElytraBoostPayload`, and the server-side `GodlyElytraBoostNetworking` accelerates the player, plays a rocket sound, and enforces a 5‑second cooldown with “Recharge in …s” messages.
+
+5) Spectral Bow + abilities
+   • `SpectralBowItem` functions like a bow but forces spectral projectiles: arrows are marked via `SpectralProjectileAccess` and cannot be picked up, and holding the bow while the special ability is toggled (press `V`) triggers glowing on nearby mobs every server tick (see `SpecialAbilityManager` + `SpecialAbilityTogglePayload` + `SpecialAbilityItem` interface).
+   • The bow’s tooltip advertises the ability (`item.himproveme.spectral_bow.desc`), and the client registers pull predicates for models in `TutorialModClient`.
+
+6) Ender Bundle
+   • Right-click the bundle to open your Ender Chest anywhere (cooldown 1 second); server syncs the chest contents to the client (`EnderBundleNetworking` → `EnderBundleSyncPayload` → `EnderBundleClientReceiver`), and `EnderBundleItem` plays bundle/chest sounds plus opens a GUI.
+   • Holding Shift while hovering the bundle shows the cached Ender Chest preview (client helper + tooltip logic). The `EnderBundleSoundTracker` keeps audio consistent when closing the screen.
+
+7) Nether / core items
+   • `NetherCoreItem` behaves like a smithing template (keeps strength effect while in inventory, forced glint and gold name). `DeadNetherCoreItem` gives the wearer Weakness, and when the item entity despawns (e.g., dropped into the void) it explodes, spawns particles, and gifts a `Nether Core` to the nearest player.
+
+8) Breeze Staff system (special durability removed)
+   • `BreezeStaffItem` now relies on `BreezeStaffBlockActions`/`StasisBinding` for custom mode metadata (mode + linked coordinates). The staff consumes XP (via `BreezeStaffConfig`) instead of durability: binding an action costs `LINK_XP_COST` and teleporting costs `TELEPORT_XP_COST`. After teleport the binding clears; the damage bar merely flashes to show short-lived activity.
+   • `BreezeStaffBlockActions` is a registry where each block supplies XP cost, mode name, and execution logic; we currently register the stasis chamber to bind in “teleport” mode. Future block works can register other actions without touching the item itself.
+   • Client-side tooltip/predicate (registered in `TutorialModClient`) shows “Mode: Teleport” plus the bound coordinates. `BreezeStaffConfig` values are exposed as static fields so datapacks/modifiers can mutate them at runtime if necessary.
+
+9) Perk system
+   • `PerkRegistry` defines the perk grid (lava_swim, fireproof, infinite_ender_pearl, ender_stare) with custom colors (via `HimColorPresets`), icons, and arrow connectors; `PerkFunctions` wires placeholder hooks for unlock/tick behavior—the actual effects are intentionally TODO but the UI is runnable.
+   • Admin commands `/himproveme perk add/remove/reset <targets> <perk_id>` (permission level 2) let operators grant/revoke perks (`HimProveMeCommands` + `HimProveMeCommandFunctions`).
+
+10) Special ability + prone systems
+   • Special abilities toggle with `V` (per `TutorialModClient` key binding); `SpecialAbilityManager` tracks an active item UID, plays feedback, and ticks the associated `SpecialAbilityItem` hook every server tick (used by Spectral Bow).
+   • Prone mode toggles with `C` (client binding) and respects a 1-second lock; `ProneNetworking` keeps players crawling (swimming pose + disable sprinting) server-side and resets safely on disconnect.
+
+11) Networking + client polish
+   • `TutorialModClient` registers model predicates for the spectral bow, Breeze Staff, and special ability tooltip entries; it also stops the vanilla crafting recipe book under certain GUIs.
+   • `EnderBundleClientReceiver` caches synchronized Ender Chest slots so tooltip previews stay accurate even if the chest was opened elsewhere.
+
+12) Miscellaneous
+   • `HimColorPresets` centralizes colors used in the perk UI.
+   • `SpecialAbilityItem` marks items that should receive `onSpecialAbilityTick` calls when their ability is enabled.
+   • `BreezeStaffConfig` exposes per-action XP costs for easier balancing.
+
+Known gaps
+   • Ore spawning / world generation hooks are missing—no new veins currently appear in world gen.
+   • The perk unlock/tick functions are mostly placeholders (lava swim/fireproof only register no-op hooks) and should be implemented before a full release.
+   • Custom durability for the Breeze Staff is purely cosmetic; XP spells the only true resource drain.
+   • No automated data generators yet; the `HimProveMeDataGenerator` remains empty.
+
+Remember: every future addition must also be appended to this log with discovery tips (e.g., keybinding, GUI entry, or right-click target). Use `/himproveme perk add <perk>` or the UI to test perks, and run `./gradlew build` to confirm compilation with the current Fabric/Java stack.

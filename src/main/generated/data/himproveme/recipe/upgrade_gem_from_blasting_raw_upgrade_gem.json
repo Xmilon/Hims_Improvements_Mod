@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.2,
+  "group": "upgrade_gem",
+  "ingredient": {
+    "item": "himproveme:raw_upgrade_gem"
+  },
+  "result": {
+    "id": "himproveme:upgrade_gem"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "himproveme:life_pearl"
+    },
+    "C": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "pattern": [
+    "###",
+    "#C#",
+    "###"
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:dead_nether_core"
+  }
+}

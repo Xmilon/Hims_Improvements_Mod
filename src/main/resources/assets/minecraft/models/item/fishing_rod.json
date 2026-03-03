@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "minecraft:item/fishing_rod"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "himproveme:stasis_bound": 1.0
+      },
+      "model": "minecraft:item/fishing_rod_cast"
+    },
+    {
+      "predicate": {
+        "cast": 1.0
+      },
+      "model": "minecraft:item/fishing_rod_cast"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:blaze_rod"
+  },
+  "base": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "result": {
+    "count": 1,
+    "id": "himproveme:chisel"
+  },
+  "template": {
+    "item": "himproveme:upgrade_gem"
+  }
+}

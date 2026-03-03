@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "himproveme",
+	"version": "${version}",
+	"name": "HimProveMe",
+	"description": "Small addons made by Xmilon",
+	"authors": [
+		"Xmilon"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/himproveme/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.xmilon.himproveme.HimProveMe"
+		],
+		"fabric-datagen": [
+			"net.xmilon.himproveme.HimProveMeDataGenerator"
+		],
+		"client": [
+			"net.xmilon.himproveme.TutorialModClient"
+		]
+	},
+	"mixins": [
+		"himproveme.mixins.json",
+		"himproveme.client.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
