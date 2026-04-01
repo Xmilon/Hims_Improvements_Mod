@@ -82,17 +82,22 @@ public class ModModelProvider extends FabricModelProvider {
     }
 
     private static void registerBowModels(ItemModelGenerator itemModelGenerator, net.minecraft.item.Item bowItem) {
-        itemModelGenerator.register(bowItem, "_pulling_0", Models.GENERATED);
-        itemModelGenerator.register(bowItem, "_pulling_1", Models.GENERATED);
-        itemModelGenerator.register(bowItem, "_pulling_2", Models.GENERATED);
+        Model bowParent = new Model(Optional.of(Identifier.of("item/bow")), Optional.empty());
+        Model pulling0Parent = new Model(Optional.of(Identifier.of("item/bow_pulling_0")), Optional.empty());
+        Model pulling1Parent = new Model(Optional.of(Identifier.of("item/bow_pulling_1")), Optional.empty());
+        Model pulling2Parent = new Model(Optional.of(Identifier.of("item/bow_pulling_2")), Optional.empty());
+
+        itemModelGenerator.register(bowItem, "_pulling_0", pulling0Parent);
+        itemModelGenerator.register(bowItem, "_pulling_1", pulling1Parent);
+        itemModelGenerator.register(bowItem, "_pulling_2", pulling2Parent);
 
         Identifier bowModelId = ModelIds.getItemModelId(bowItem);
         Identifier pulling0ModelId = ModelIds.getItemSubModelId(bowItem, "_pulling_0");
         Identifier pulling1ModelId = ModelIds.getItemSubModelId(bowItem, "_pulling_1");
         Identifier pulling2ModelId = ModelIds.getItemSubModelId(bowItem, "_pulling_2");
 
-        Models.GENERATED.upload(bowModelId, TextureMap.layer0(bowItem), itemModelGenerator.writer, (id, textures) -> {
-            JsonObject jsonObject = Models.GENERATED.createJson(id, textures);
+        bowParent.upload(bowModelId, TextureMap.layer0(bowItem), itemModelGenerator.writer, (id, textures) -> {
+            JsonObject jsonObject = bowParent.createJson(id, textures);
             JsonArray overrides = new JsonArray();
 
             addBowOverride(overrides, 0.0f, pulling0ModelId);

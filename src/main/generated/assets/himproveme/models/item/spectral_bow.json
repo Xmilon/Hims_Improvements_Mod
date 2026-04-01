@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "minecraft:item/bow",
   "overrides": [
     {
       "model": "himproveme:item/spectral_bow_pulling_0",

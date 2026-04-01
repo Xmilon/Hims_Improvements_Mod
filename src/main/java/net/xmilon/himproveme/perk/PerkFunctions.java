@@ -91,6 +91,19 @@ public final class PerkFunctions {
                         }
                 )
         );
+
+        // Safe Levitation: the fall immunity is handled directly in the player fall mixin.
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "safe_levitation"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; this perk passively arms during levitation.
+                        },
+                        (player, level) -> {
+                            // No ticking function; the player mixin tracks levitation state directly.
+                        }
+                )
+        );
     }
 
     public static void runUnlock(ServerPlayerEntity player, Identifier perkId) {

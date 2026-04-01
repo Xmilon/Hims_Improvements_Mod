@@ -9,6 +9,8 @@ import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.Identifier;
+import net.xmilon.himproveme.HimProveMe;
 import net.xmilon.himproveme.block.ModBlocks;
 import net.xmilon.himproveme.item.ModItem;
 
@@ -44,7 +46,15 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 				.criterion(hasItem(ModBlocks.UPGRADE_GEM_BLOCK), conditionsFromItem(ModBlocks.UPGRADE_GEM_BLOCK))
 				.offerTo(exporter);
 
-		offerBlasting(exporter, List.of(ModItem.RAW_UPGRADE_GEM), RecipeCategory.MISC, ModItem.UPGRADE_GEM, 0.2f, 100, "upgrade_gem");
+		ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, ModItem.UPGRADE_GEM, 1)
+				.input(ModItem.RAW_UPGRADE_GEM)
+				.input(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE)
+				.criterion(hasItem(ModItem.RAW_UPGRADE_GEM), conditionsFromItem(ModItem.RAW_UPGRADE_GEM))
+				.offerTo(exporter, Identifier.of(HimProveMe.MOD_ID, "upgrade_gem_from_raw_upgrade_gem"));
+
+		//offerBlasting(exporter, List.of(ModItem.RAW_UPGRADE_GEM), RecipeCategory.MISC, ModItem.UPGRADE_GEM, 0.2f, 100, "upgrade_gem");
+
+		offerBlasting(exporter, List.of(ModItem.RAW_ENDER_ESSENCE), RecipeCategory.MISC, ModItem.ENDER_ESSENCE, 0.2f, 100, "upgrade_gem");
 
 		ShapelessRecipeJsonBuilder rawFromDust = ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, ModItem.RAW_UPGRADE_GEM);
 		for (int i = 0; i < 4; i++) {
@@ -126,9 +136,10 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItem.ENDER_INGOT)
 				.pattern("###")
 				.pattern("#C#")
-				.pattern("###")
+				.pattern("#U#")
 				.input('C', Items.NETHERITE_INGOT)
 				.input('#', ModItem.ENDER_ESSENCE)
+				.input('U', Items.DRAGON_BREATH)
 				.criterion(hasItem(ModItem.ENDER_ESSENCE), conditionsFromItem(ModItem.ENDER_ESSENCE))
 				.offerTo(exporter);
 	}

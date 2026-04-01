@@ -2,12 +2,15 @@
   "required": true,
   "package": "net.xmilon.himproveme.mixin.client",
   "compatibilityLevel": "JAVA_21",
-  "client": [
-    "ElytraFeatureRendererMixin",
-    "InventoryScreenTooltipMixin",
-    "ScreenPerkCloseMixin",
-    "RecipeBookWidgetPerkMixin",
-    "ClientPlayerEntityProneMixin"
+	"client": [
+		"BundleTooltipComponentMixin",
+		"ElytraFeatureRendererMixin",
+		"HandledScreenBundleAccessorMixin",
+		"InventoryScreenTooltipMixin",
+		"ScreenPerkCloseMixin",
+		"RecipeBookWidgetPerkMixin",
+		"ClientPlayerEntityProneMixin",
+		"TooltipComponentMixin"
   ],
   "injectors": {
     "defaultRequire": 1

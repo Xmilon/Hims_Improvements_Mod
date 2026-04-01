@@ -4,9 +4,12 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
@@ -14,6 +17,7 @@ import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import java.util.List;
 import net.minecraft.network.packet.c2s.play.RecipeCategoryOptionsC2SPacket;
@@ -23,7 +27,13 @@ import net.xmilon.himproveme.entity.ModEntities;
 import net.xmilon.himproveme.entity.client.DodoModel;
 import net.xmilon.himproveme.entity.client.DodoRenderer;
 import net.xmilon.himproveme.item.ModItem;
+import net.xmilon.himproveme.access.HandledScreenBundleScrollAccess;
+import net.xmilon.himproveme.item.custom.BundleUpgradeHelper;
+import net.xmilon.himproveme.item.custom.LockableContainerHelper;
+import net.xmilon.himproveme.network.BundleScrollNetworking;
+import net.xmilon.himproveme.network.BundleScrollPayload;
 import net.xmilon.himproveme.network.GodlyElytraBoostPayload;
+import net.xmilon.himproveme.network.ShulkerScrollPayload;
 import net.xmilon.himproveme.network.SpecialAbilityTogglePayload;
 import net.xmilon.himproveme.network.perk.PerkBookSyncPayload;
 import net.xmilon.himproveme.perk.ClientPerkBookState;
@@ -59,6 +69,7 @@ public class TutorialModClient implements ClientModInitializer{
     public void onInitializeClient() {
         registerSpectralBowPredicates();
         registerPerkNetworking();
+        registerBundleScrollInput();
         EnderBundleClientReceiver.register();
         registerBreezeStaffPredicate();
         ItemTooltipCallback.EVENT.register((stack, context, type, tooltip) -> {
@@ -106,6 +117,51 @@ public class TutorialModClient implements ClientModInitializer{
         //Register Dodo entity
         EntityModelLayerRegistry.registerModelLayer(DodoModel.DODO, DodoModel::getTexturedModelData);
         EntityRendererRegistry.register(ModEntities.DODO, DodoRenderer::new);
+    }
+
+    private static void registerBundleScrollInput() {
+        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            if (!(screen instanceof HandledScreen<?> handledScreen)) {
+                return;
+            }
+
+            ScreenMouseEvents.allowMouseScroll(screen).register((currentScreen, mouseX, mouseY, horizontalAmount, verticalAmount) ->
+                    !handleBundleScroll(handledScreen, verticalAmount));
+        });
+    }
+
+    private static boolean handleBundleScroll(HandledScreen<?> handledScreen, double verticalAmount) {
+        int direction = Double.compare(verticalAmount, 0.0);
+
+        if (direction == 0) {
+            return false;
+        }
+
+        Slot focusedSlot = ((HandledScreenBundleScrollAccess) handledScreen).himproveme$getFocusedSlot();
+
+        if (focusedSlot != null) {
+            ItemStack hoveredStack = focusedSlot.getStack();
+            ItemStack cursorStack = handledScreen.getScreenHandler().getCursorStack();
+
+            if (LockableContainerHelper.canExtractFromShulker(hoveredStack, cursorStack, direction)) {
+                ClientPlayNetworking.send(new ShulkerScrollPayload(handledScreen.getScreenHandler().syncId, focusedSlot.id, direction));
+                return true;
+            }
+
+            if (BundleUpgradeHelper.isBundle(hoveredStack)) {
+                ClientPlayNetworking.send(new BundleScrollPayload(handledScreen.getScreenHandler().syncId, focusedSlot.id, direction));
+                return true;
+            }
+        }
+
+        ItemStack cursorStack = handledScreen.getScreenHandler().getCursorStack();
+
+        if (BundleUpgradeHelper.isBundle(cursorStack)) {
+            ClientPlayNetworking.send(new BundleScrollPayload(handledScreen.getScreenHandler().syncId, BundleScrollNetworking.CURSOR_SLOT, direction));
+            return true;
+        }
+
+        return false;
     }
 
     private static void registerSpectralBowPredicates() {

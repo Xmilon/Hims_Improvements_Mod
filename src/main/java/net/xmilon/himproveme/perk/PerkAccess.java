@@ -8,6 +8,7 @@ public final class PerkAccess {
     public static final Identifier LAVA_SWIM_WIP = Identifier.of(HimProveMe.MOD_ID, "lava_swim_wip");
     public static final Identifier ENDER_STARE = Identifier.of(HimProveMe.MOD_ID, "ender_stare");
     public static final Identifier INFINITE_ENDER_PEARL = Identifier.of(HimProveMe.MOD_ID, "infinite_ender_pearl");
+    public static final Identifier SAFE_LEVITATION = Identifier.of(HimProveMe.MOD_ID, "safe_levitation");
 
     private PerkAccess() {
     }
@@ -29,5 +30,9 @@ public final class PerkAccess {
 
     public static boolean hasInfiniteEnderPearl(PlayerEntity player) {
         return hasUnlocked(player, INFINITE_ENDER_PEARL);
+    }
+
+    public static boolean hasSafeLevitation(PlayerEntity player) {
+        return hasUnlocked(player, SAFE_LEVITATION);
     }
 }

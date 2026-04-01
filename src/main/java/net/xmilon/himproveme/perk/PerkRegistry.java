@@ -112,6 +112,21 @@ public final class PerkRegistry {
 
         registerArrow(1, 3);
 
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "safe_levitation"),
+                "perk.himproveme.safe_levitation",
+                "perk.himproveme.safe_levitation.desc",
+                "perk.himproveme.category.the_end",
+                "perk.himproveme.safe_levitation.function",
+                Identifier.of("minecraft", "phantom_membrane"),
+                Identifier.of(HimProveMe.MOD_ID, "perk.safe_levitation_unlock"),
+                HimColorPresets.VIOLET,
+                1,
+                1,
+                4,
+                List.of(Identifier.of(HimProveMe.MOD_ID, "ender_stare"))
+        );
+
 
 
 

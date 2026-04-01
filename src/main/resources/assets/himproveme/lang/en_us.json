@@ -13,7 +13,7 @@
   "item.himproveme.raw_ender_essence": "Raw Ender Essence",
 
 
-  "item.himproveme.upgrade_gem": "Upgrade Gem",
+  "item.himproveme.upgrade_gem": "Gem Upgrade Smithing Template",
   "item.himproveme.raw_upgrade_gem": "Raw Upgrade Gem",
   "item.himproveme.upgrade_gem_dust": "Upgrade Gem Dust",
   "item.himproveme.ender_ingot": "Ender Ingot",
@@ -49,6 +49,7 @@
   "item.himproveme.ender_bundle": "Ender Bundle",
   "item.himproveme.ender_bundle.open_title": "Ender Bundle",
   "item.himproveme.ender_bundle.shift_hint": "Hold Shift for ender chest preview",
+  "item.himproveme.bundle.level": "Lvl %s",
 
   "block.himproveme.upgrade_gem_block": "Block of Upgrade Gems",
   "block.himproveme.raw_upgrade_gem_block": "Gem Block",
@@ -98,6 +99,9 @@
   "perk.himproveme.ender_stare": "Ender Stare",
   "perk.himproveme.ender_stare.desc": "You don't anger Endermans when looking at them.",
   "perk.himproveme.ender_stare.function": "Friendly Enderman",
+  "perk.himproveme.safe_levitation": "Safe Levitation",
+  "perk.himproveme.safe_levitation.desc": "After levitating, your next landing ignores fall damage.",
+  "perk.himproveme.safe_levitation.function": "One safe landing",
   "item.himproveme.ender_staff": "Ender Staff",
   "item.himproveme.ender_staff.desc": "Tap the special ability key to blink to the block you&#39;re looking at.",
   "ability.himproveme.ender_staff.no_perk": "You must unlock Infinite Ender Pearl to use the Ender Staff.",
@@ -110,6 +114,10 @@
   "chestlock.himproveme.master_locked": "Chest master-locked.",
   "chestlock.himproveme.unlocked": "Chest unlocked.",
   "chestlock.himproveme.master_no_lock": "Master Key cannot lock or unlock chests.",
+
+  "itemlock.himproveme.denied": "This container is locked.",
+  "itemlock.himproveme.tooltip.locked": "Locked",
+  "itemlock.himproveme.tooltip.unlock_hint": "Unlock with a matching named key in crafting",
 
   "item.himproveme.dodo_spawn_egg": "Dodo Spawn Egg",
 

@@ -65,6 +65,7 @@ public final class HimProveMeCommands {
 
             root.then(perkRoot);
             root.then(createBreezeCommandTree());
+            root.then(createDebugCommandTree());
             root.then(createKeepXpCommand());
             dispatcher.register(root);
         });
@@ -92,6 +93,14 @@ public final class HimProveMeCommands {
         return CommandManager.literal("keep-xp")
                 .then(CommandManager.argument("value", BoolArgumentType.bool())
                         .executes(context -> setKeepXp(context, BoolArgumentType.getBool(context, "value"))));
+    }
+
+    private static LiteralArgumentBuilder<ServerCommandSource> createDebugCommandTree() {
+        return CommandManager.literal("debug")
+                .then(CommandManager.literal("movement")
+                        .executes(context -> debugMovementSelf(context))
+                        .then(CommandManager.argument("targets", EntityArgumentType.players())
+                                .executes(context -> debugMovementTargets(context))));
     }
 
     private static void registerPerkAction(
@@ -130,5 +139,13 @@ public final class HimProveMeCommands {
 
     private static int setKeepXp(CommandContext<ServerCommandSource> context, boolean keep) {
         return HimProveMeCommandFunctions.setKeepXpOnDeath(context.getSource(), keep);
+    }
+
+    private static int debugMovementSelf(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return HimProveMeCommandFunctions.debugMovement(context.getSource(), java.util.List.of(context.getSource().getPlayerOrThrow()));
+    }
+
+    private static int debugMovementTargets(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return HimProveMeCommandFunctions.debugMovement(context.getSource(), EntityArgumentType.getPlayers(context, "targets"));
     }
 }

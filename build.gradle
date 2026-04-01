@@ -24,6 +24,14 @@ fabricApi {
 	}
 }
 
+loom {
+	runs {
+		named("datagen") {
+			runDir = "run"
+		}
+	}
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
