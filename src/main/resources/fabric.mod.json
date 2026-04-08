@@ -21,6 +21,9 @@
 		"fabric-datagen": [
 			"net.xmilon.himproveme.HimProveMeDataGenerator"
 		],
+		"jade": [
+			"net.xmilon.himproveme.compat.jade.HimProveMeJadePlugin"
+		],
 		"client": [
 			"net.xmilon.himproveme.TutorialModClient"
 		]
@@ -34,5 +37,8 @@
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"jade": "*"
 	}
 }

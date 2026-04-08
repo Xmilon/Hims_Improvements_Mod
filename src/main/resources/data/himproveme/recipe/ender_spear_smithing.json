@@ -1,0 +1,24 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "spears"
+      ]
+    }
+  ],
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "himproveme:ender_ingot"
+  },
+  "base": {
+    "item": "minecraft:netherite_spear"
+  },
+  "result": {
+    "count": 1,
+    "id": "himproveme:ender_spear"
+  },
+  "template": {
+    "item": "himproveme:upgrade_gem"
+  }
+}

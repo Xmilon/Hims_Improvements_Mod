@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.xmilon.himproveme.perk.warden.WardenPerkHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +22,17 @@ public class PerkBookState {
         NO_SUCH_PERK,
         INSTANCE_OUT_OF_RANGE,
         PREREQUISITE_LOCKED,
+        MISSING_WARDEN_TOKEN,
         MAX_LEVEL,
         NOT_ENOUGH_LEVELS
+    }
+
+    public enum ToggleResult {
+        SUCCESS,
+        NO_SUCH_PERK,
+        INSTANCE_OUT_OF_RANGE,
+        NOT_UNLOCKED,
+        NOT_TOGGLEABLE
     }
 
     public PerkBookState() {
@@ -82,14 +92,48 @@ public class PerkBookState {
                 }
             }
         }
-        if (player.experienceLevel < PerkRegistry.XP_LEVEL_COST_PER_UPGRADE) {
+        if (currentLevel <= 0
+                && WardenPerkHelper.isWardenPerk(perkId)
+                && !WardenPerkHelper.hasUnlockToken(player)) {
+            return UpgradeResult.MISSING_WARDEN_TOKEN;
+        }
+        if (player.experienceLevel < definition.xpLevelCost()) {
             return UpgradeResult.NOT_ENOUGH_LEVELS;
         }
 
-        player.addExperienceLevels(-PerkRegistry.XP_LEVEL_COST_PER_UPGRADE);
+        player.addExperienceLevels(-definition.xpLevelCost());
         instance.setLevel(perkId, currentLevel + 1);
+        if (currentLevel <= 0 && WardenPerkHelper.isWardenPerk(perkId)) {
+            WardenPerkHelper.consumeUnlockToken(player);
+        }
         selectedIndex = instanceIndex;
         return UpgradeResult.SUCCESS;
+    }
+
+    public ToggleResult toggle(ServerPlayerEntity player, int instanceIndex, Identifier perkId) {
+        if (instanceIndex < 0 || instanceIndex >= instances.size()) {
+            return ToggleResult.INSTANCE_OUT_OF_RANGE;
+        }
+
+        PerkDefinition definition = PerkRegistry.get(perkId);
+        if (definition == null) {
+            return ToggleResult.NO_SUCH_PERK;
+        }
+        if (!definition.toggleable()) {
+            return ToggleResult.NOT_TOGGLEABLE;
+        }
+
+        PerkInstanceState instance = instances.get(instanceIndex);
+        if (instance.getLevel(perkId) <= 0) {
+            return ToggleResult.NOT_UNLOCKED;
+        }
+
+        instance.toggleEnabled(perkId);
+        if (instance.isEnabled(perkId) && WardenPerkHelper.isWardenPerk(perkId)) {
+            WardenPerkHelper.enforceExclusiveToggle(instance, perkId);
+        }
+        selectedIndex = instanceIndex;
+        return ToggleResult.SUCCESS;
     }
 
     public boolean removePerkFromAllInstances(Identifier perkId) {

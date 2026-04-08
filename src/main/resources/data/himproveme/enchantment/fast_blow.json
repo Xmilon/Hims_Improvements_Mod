@@ -1,0 +1,22 @@
+{
+  "anvil_cost": 2,
+  "description": {
+    "translate": "enchantment.himproveme.fast_blow"
+  },
+  "exclusive_set": "#himproveme:exclusive_set/blowgun",
+  "max_cost": {
+    "base": 26,
+    "per_level_above_first": 8
+  },
+  "max_level": 3,
+  "min_cost": {
+    "base": 8,
+    "per_level_above_first": 8
+  },
+  "slots": [
+    "mainhand",
+    "offhand"
+  ],
+  "supported_items": "#himproveme:enchantable/blowgun",
+  "weight": 4
+}

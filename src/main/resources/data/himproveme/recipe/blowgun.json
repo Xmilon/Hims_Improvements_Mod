@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "key": {
+    "B": {
+      "item": "minecraft:bamboo"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "  B",
+    " SB",
+    "B  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:blowgun"
+  }
+}

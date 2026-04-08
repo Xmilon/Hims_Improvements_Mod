@@ -67,7 +67,12 @@ public final class HimProveMeCommands {
             root.then(createBreezeCommandTree());
             root.then(createDebugCommandTree());
             root.then(createKeepXpCommand());
+            root.then(createLevelingCommandTree());
+            root.then(createWorldCommandTree());
             dispatcher.register(root);
+
+            dispatcher.register(CommandManager.literal("levelbook")
+                    .executes(context -> LevelingCommandFunctions.claimGuideBook(context.getSource().getPlayerOrThrow())));
         });
     }
 
@@ -101,6 +106,56 @@ public final class HimProveMeCommands {
                         .executes(context -> debugMovementSelf(context))
                         .then(CommandManager.argument("targets", EntityArgumentType.players())
                                 .executes(context -> debugMovementTargets(context))));
+    }
+
+    private static LiteralArgumentBuilder<ServerCommandSource> createWorldCommandTree() {
+        return CommandManager.literal("world")
+                .requires(source -> source.hasPermissionLevel(4))
+                .then(CommandManager.literal("hardcore")
+                        .then(CommandManager.argument("value", BoolArgumentType.bool())
+                                .executes(context -> setHardcoreMode(context, BoolArgumentType.getBool(context, "value")))));
+    }
+
+    private static LiteralArgumentBuilder<ServerCommandSource> createLevelingCommandTree() {
+        LiteralArgumentBuilder<ServerCommandSource> levelingRoot = CommandManager.literal("leveling");
+
+        levelingRoot.then(CommandManager.literal("info")
+                .executes(context -> LevelingCommandFunctions.showInfo(context.getSource())));
+
+        levelingRoot.then(CommandManager.literal("enabled")
+                .then(CommandManager.argument("value", BoolArgumentType.bool())
+                        .executes(context -> LevelingCommandFunctions.setEnabled(context.getSource(), BoolArgumentType.getBool(context, "value")))));
+
+        levelingRoot.then(CommandManager.literal("max-level")
+                .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
+                        .executes(context -> LevelingCommandFunctions.setMaxLevel(context.getSource(), IntegerArgumentType.getInteger(context, "value")))));
+
+        levelingRoot.then(CommandManager.literal("set-level")
+                .then(CommandManager.argument("targets", EntityArgumentType.players())
+                        .then(CommandManager.argument("level", IntegerArgumentType.integer(1))
+                                .executes(context -> LevelingCommandFunctions.setLevel(
+                                        context.getSource(),
+                                        EntityArgumentType.getPlayers(context, "targets"),
+                                        IntegerArgumentType.getInteger(context, "level")
+                                )))));
+
+        levelingRoot.then(CommandManager.literal("add-xp")
+                .then(CommandManager.argument("targets", EntityArgumentType.players())
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(0))
+                                .executes(context -> LevelingCommandFunctions.addXp(
+                                        context.getSource(),
+                                        EntityArgumentType.getPlayers(context, "targets"),
+                                        IntegerArgumentType.getInteger(context, "amount")
+                                )))));
+
+        levelingRoot.then(CommandManager.literal("give-book")
+                .then(CommandManager.argument("targets", EntityArgumentType.players())
+                        .executes(context -> LevelingCommandFunctions.giveBook(
+                                context.getSource(),
+                                EntityArgumentType.getPlayers(context, "targets")
+                        ))));
+
+        return levelingRoot;
     }
 
     private static void registerPerkAction(
@@ -147,5 +202,9 @@ public final class HimProveMeCommands {
 
     private static int debugMovementTargets(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         return HimProveMeCommandFunctions.debugMovement(context.getSource(), EntityArgumentType.getPlayers(context, "targets"));
+    }
+
+    private static int setHardcoreMode(CommandContext<ServerCommandSource> context, boolean value) {
+        return HimProveMeCommandFunctions.setHardcoreMode(context.getSource(), value);
     }
 }

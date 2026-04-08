@@ -1,0 +1,60 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "dragonloot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "ender_dragon_loot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "enderitemod:enderite_spear",
+      "required": false
+    },
+    {
+      "id": "himproveme:ender_spear",
+      "required": false
+    },
+    {
+      "id": "himproveme:double_ender_spear",
+      "required": false
+    },
+    {
+      "id": "minecraft:copper_spear",
+      "required": false
+    },
+    "minecraft:wooden_spear",
+    "minecraft:stone_spear",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:diamond_spear",
+    "minecraft:netherite_spear",
+    {
+      "id": "oreganized:electrum_spear",
+      "required": false
+    },
+    "minecraft:wooden_sword",
+    "minecraft:stone_sword",
+    "minecraft:iron_sword",
+    "minecraft:golden_sword",
+    "minecraft:diamond_sword",
+    "minecraft:netherite_sword",
+    "himproveme:wood_dagger",
+    "himproveme:stone_dagger",
+    "himproveme:gold_dagger",
+    "himproveme:iron_dagger",
+    "himproveme:diamond_dagger",
+    "himproveme:netherite_dagger",
+    "himproveme:ender_dagger",
+    "minecraft:wooden_axe",
+    "minecraft:stone_axe",
+    "minecraft:iron_axe",
+    "minecraft:golden_axe",
+    "minecraft:diamond_axe",
+    "minecraft:netherite_axe",
+    "himproveme:ender_sword",
+    "himproveme:ender_axe"
+  ]
+}

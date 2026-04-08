@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "minecraft:diamond"
+  },
+  "base": {
+    "item": "himproveme:iron_dagger"
+  },
+  "result": {
+    "count": 1,
+    "id": "himproveme:diamond_dagger"
+  },
+  "template": {
+    "item": "himproveme:upgrade_gem"
+  }
+}

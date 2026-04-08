@@ -1,0 +1,28 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "himproveme:item/gold_dagger"
+  },
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [0, -118, -70],
+      "translation": [1.15, 3.0, 1.0],
+      "scale": [0.82, 0.82, 0.82]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 118, 70],
+      "translation": [1.15, 3.0, 1.0],
+      "scale": [0.82, 0.82, 0.82]
+    },
+    "thirdperson_righthand": {
+      "rotation": [0, -102, -74],
+      "translation": [0.2, 2.4, 0.9],
+      "scale": [0.82, 0.82, 0.82]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [0, 102, 74],
+      "translation": [0.2, 2.4, 0.9],
+      "scale": [0.82, 0.82, 0.82]
+    }
+  }
+}

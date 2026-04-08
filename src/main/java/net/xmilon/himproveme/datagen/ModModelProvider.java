@@ -63,12 +63,20 @@ public class ModModelProvider extends FabricModelProvider {
         itemModelGenerator.register(ModItem.DEAD_NETHER_CORE, Models.GENERATED);
         itemModelGenerator.register(ModItem.NETHER_CORE, Models.GENERATED);
         itemModelGenerator.register(ModItem.GODLY_ELYTRA, Models.GENERATED);
+        itemModelGenerator.register(ModItem.MEGA_ROCKET, Models.GENERATED);
         itemModelGenerator.register(ModItem.BREEZE_STAFF, Models.HANDHELD);
         itemModelGenerator.register(ModItem.ENDER_STAFF, Models.HANDHELD);
         itemModelGenerator.register(ModItem.ENDER_BUNDLE, Models.GENERATED);
         registerBowModels(itemModelGenerator, ModItem.SPECTRAL_BOW);
         itemModelGenerator.register(ModItem.ENDER_INGOT, Models.GENERATED);
         itemModelGenerator.register(ModItem.RAW_ENDER_ESSENCE, Models.GENERATED);
+        registerDaggerModel(itemModelGenerator, ModItem.WOOD_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.STONE_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.GOLD_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.IRON_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.DIAMOND_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.NETHERITE_DAGGER);
+        registerDaggerModel(itemModelGenerator, ModItem.ENDER_DAGGER);
         itemModelGenerator.register(ModItem.ENDER_SHOVEL, Models.GENERATED);
         itemModelGenerator.register(ModItem.ENDER_AXE, Models.GENERATED);
         itemModelGenerator.register(ModItem.ENDER_PICKAXE, Models.GENERATED);
@@ -117,5 +125,39 @@ public class ModModelProvider extends FabricModelProvider {
         overrideObject.add("predicate", predicateObject);
         overrideObject.addProperty("model", modelId.toString());
         overrides.add(overrideObject);
+    }
+
+    private static void registerDaggerModel(ItemModelGenerator itemModelGenerator, net.minecraft.item.Item daggerItem) {
+        Model daggerParent = new Model(Optional.of(Identifier.of("item/handheld")), Optional.empty());
+        Identifier daggerModelId = ModelIds.getItemModelId(daggerItem);
+
+        daggerParent.upload(daggerModelId, TextureMap.layer0(daggerItem), itemModelGenerator.writer, (id, textures) -> {
+            JsonObject jsonObject = daggerParent.createJson(id, textures);
+            JsonObject display = new JsonObject();
+
+            display.add("firstperson_righthand", createTransform(new float[]{0.0f, -118.0f, -70.0f}, new float[]{1.15f, 3.0f, 1.0f}, new float[]{0.82f, 0.82f, 0.82f}));
+            display.add("firstperson_lefthand", createTransform(new float[]{0.0f, 118.0f, 70.0f}, new float[]{1.15f, 3.0f, 1.0f}, new float[]{0.82f, 0.82f, 0.82f}));
+            display.add("thirdperson_righthand", createTransform(new float[]{0.0f, -102.0f, -74.0f}, new float[]{0.2f, 2.4f, 0.9f}, new float[]{0.82f, 0.82f, 0.82f}));
+            display.add("thirdperson_lefthand", createTransform(new float[]{0.0f, 102.0f, 74.0f}, new float[]{0.2f, 2.4f, 0.9f}, new float[]{0.82f, 0.82f, 0.82f}));
+
+            jsonObject.add("display", display);
+            return jsonObject;
+        });
+    }
+
+    private static JsonObject createTransform(float[] rotation, float[] translation, float[] scale) {
+        JsonObject transform = new JsonObject();
+        transform.add("rotation", createArray(rotation));
+        transform.add("translation", createArray(translation));
+        transform.add("scale", createArray(scale));
+        return transform;
+    }
+
+    private static JsonArray createArray(float[] values) {
+        JsonArray array = new JsonArray();
+        for (float value : values) {
+            array.add(value);
+        }
+        return array;
     }
 }

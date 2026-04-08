@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "key": {
+    "I": {
+      "item": "minecraft:stick"
+    },
+    "X": {
+      "tag": "minecraft:stone_tool_materials"
+    }
+  },
+  "pattern": [
+    " X ",
+    "  X",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:stone_dagger"
+  }
+}

@@ -3,6 +3,7 @@ package net.xmilon.himproveme.mixin.client;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -12,14 +13,18 @@ import net.minecraft.registry.Registries;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.xmilon.himproveme.HimProveMe;
+import net.xmilon.himproveme.item.ModItem;
 import net.xmilon.himproveme.network.perk.PerkBookRequestSyncPayload;
+import net.xmilon.himproveme.network.perk.PerkBookTogglePayload;
 import net.xmilon.himproveme.network.perk.PerkBookUpgradePayload;
 import net.xmilon.himproveme.perk.ClientPerkBookState;
 import net.xmilon.himproveme.perk.PerkBookState;
 import net.xmilon.himproveme.perk.PerkDefinition;
 import net.xmilon.himproveme.perk.PerkInstanceState;
 import net.xmilon.himproveme.perk.PerkRegistry;
+import net.xmilon.himproveme.perk.warden.WardenPerkHelper;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
@@ -72,9 +77,13 @@ public abstract class RecipeBookWidgetPerkMixin {
     @Unique
     private static final int CELL_WIDTH = 48;
     @Unique
+    private static final int ROW_LABEL_X_SHIFT = -10;
+    @Unique
     private static final int CELL_START_X = 18;
     @Unique
     private static final int PAN_MARGIN = 80;
+    @Unique
+    private static final long TOGGLE_HOLD_DURATION_MS = 650L;
 
     @Unique
     private static final Identifier PERK_BACKGROUND_TEXTURE = Identifier.of(HimProveMe.MOD_ID, "textures/gui/perk/perks.png");
@@ -93,6 +102,17 @@ public abstract class RecipeBookWidgetPerkMixin {
     private int himproveme$dragStartContentOffsetX;
     @Unique
     private int himproveme$dragStartContentOffsetY;
+    @Unique
+    @Nullable
+    private Identifier himproveme$toggleHoldPerkId;
+    @Unique
+    private int himproveme$toggleHoldInstanceIndex = -1;
+    @Unique
+    private long himproveme$toggleHoldStartTimeMs;
+    @Unique
+    private boolean himproveme$toggleHoldCompleted;
+    @Unique
+    private int himproveme$toggleHoldMouseButton = -1;
 
     @Inject(method = "setOpen", at = @At("TAIL"))
     private void himproveme$requestPerkSync(boolean opened, CallbackInfo ci) {
@@ -117,9 +137,13 @@ public abstract class RecipeBookWidgetPerkMixin {
 
         PerkBookState state = ClientPerkBookState.getSnapshot();
         PerkInstanceState instance = state.getSelectedInstance();
+        int selectedIndex = state.selectedIndex();
         Map<Integer, List<PerkDefinition>> perksByRow = himproveme$buildPerksByRow();
         List<Integer> rowIndexes = new ArrayList<>(perksByRow.keySet());
         rowIndexes.sort(Integer::compareTo);
+        PerkDefinition hoveredPerk = himproveme$getHoveredPerk(mouseX, mouseY);
+
+        himproveme$updateToggleHold(mouseX, mouseY, selectedIndex, instance);
 
         if (himproveme$draggingContent) {
             long handle = client.getWindow().getHandle();
@@ -137,7 +161,10 @@ public abstract class RecipeBookWidgetPerkMixin {
 
         context.drawTexture(PERK_BACKGROUND_TEXTURE, panelX, panelY, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, PANEL_WIDTH, PANEL_HEIGHT);
         context.drawText(client.textRenderer, Text.translatable("perk.himproveme.title"), panelX + 8, panelY + 7, 0xFFE8D0A0, false);
-        context.drawText(client.textRenderer, Text.translatable("perk.himproveme.unlock_cost", PerkRegistry.XP_LEVEL_COST_PER_UPGRADE), panelX + 8, panelY + 18, 0xFFD6B27C, false);
+        Text costLabel = hoveredPerk == null
+                ? Text.translatable("perk.himproveme.unlock_cost_varies")
+                : Text.translatable("perk.himproveme.unlock_cost", hoveredPerk.xpLevelCost());
+        context.drawText(client.textRenderer, costLabel, panelX + 8, panelY + 18, 0xFFD6B27C, false);
 
         context.enableScissor(contentX, contentY, contentX + CONTENT_WIDTH, contentY + CONTENT_HEIGHT);
 
@@ -149,7 +176,7 @@ public abstract class RecipeBookWidgetPerkMixin {
             int slotY = rowBaseY + 14;
             int buttonY = slotY + SLOT_SIZE + 17;
 
-            context.drawText(client.textRenderer, Text.translatable(himproveme$getCategoryKeyForRow(rowPerks)), contentX + himproveme$contentOffsetX, rowTextY, 0xFFE3C998, false);
+            context.drawText(client.textRenderer, Text.translatable(himproveme$getCategoryKeyForRow(rowPerks)), contentX + himproveme$contentOffsetX + ROW_LABEL_X_SHIFT, rowTextY, 0xFFE3C998, false);
 
             int maxColumn = himproveme$getMaxColumn(rowId, rowPerks);
             for (int col = 0; col <= maxColumn; col++) {
@@ -167,6 +194,7 @@ public abstract class RecipeBookWidgetPerkMixin {
                 himproveme$drawPerkSlot(context, cellX, slotY, perk, unlocked);
                 context.drawCenteredTextWithShadow(client.textRenderer, perk.name(), cellX + SLOT_SIZE / 2, slotY + SLOT_SIZE + 6, perk.titleColor());
                 himproveme$drawUnlockButton(context, cellX - 10, buttonY, perk, instance);
+                himproveme$drawToggleOverlay(context, cellX - 10, slotY, buttonY + 14, perk, selectedIndex, instance);
             }
         }
 
@@ -186,16 +214,38 @@ public abstract class RecipeBookWidgetPerkMixin {
         PerkDefinition hoveredPerk = himproveme$getHoveredPerk(mouseX, mouseY);
         if (hoveredPerk != null) {
             List<Text> lines = new ArrayList<>();
-            for (Identifier requiredId : hoveredPerk.requiredPerkIds()) {
-                if (instance.getLevel(requiredId) <= 0) {
-                    PerkDefinition requiredPerk = PerkRegistry.get(requiredId);
-                    Text requiredName = requiredPerk == null ? Text.literal(requiredId.toString()) : requiredPerk.name();
-                    lines.add(Text.translatable("perk.himproveme.info.requires", requiredName));
-                }
-            }
             lines.add(hoveredPerk.name());
-            lines.add(hoveredPerk.description());
-            lines.add(Text.translatable("perk.himproveme.info.unlocks", hoveredPerk.unlockFunction()));
+            if (Screen.hasShiftDown()) {
+                for (Identifier requiredId : hoveredPerk.requiredPerkIds()) {
+                    if (instance.getLevel(requiredId) <= 0) {
+                        PerkDefinition requiredPerk = PerkRegistry.get(requiredId);
+                        Text requiredName = requiredPerk == null ? Text.literal(requiredId.toString()) : requiredPerk.name();
+                        lines.add(Text.translatable("perk.himproveme.info.requires", requiredName));
+                    }
+                }
+                lines.add(hoveredPerk.description());
+                lines.add(Text.translatable("perk.himproveme.unlock_cost", hoveredPerk.xpLevelCost()));
+                lines.add(Text.translatable("perk.himproveme.info.unlocks", hoveredPerk.unlockFunction()));
+            } else {
+                lines.add(Text.translatable("perk.himproveme.details_hint"));
+            }
+            if (himproveme$needsWardenToken(hoveredPerk) && instance.getLevel(hoveredPerk.id()) <= 0) {
+                lines.add(Text.translatable(
+                        himproveme$hasWardenToken()
+                                ? "perk.himproveme.warden_token_ready"
+                                : "perk.himproveme.warden_token_required"
+                ));
+            }
+            if (WardenPerkHelper.isWardenPerk(hoveredPerk.id())) {
+                lines.add(Text.translatable("perk.himproveme.warden_exclusive"));
+                lines.add(Text.translatable("perk.himproveme.warden_health_penalty"));
+            }
+            if (hoveredPerk.toggleable() && instance.getLevel(hoveredPerk.id()) > 0) {
+                lines.add(Text.translatable(instance.isEnabled(hoveredPerk.id())
+                        ? "perk.himproveme.state.enabled"
+                        : "perk.himproveme.state.disabled"));
+                lines.add(Text.translatable("perk.himproveme.toggle_hint"));
+            }
             context.drawTooltip(client.textRenderer, lines, mouseX, mouseY);
         }
         ci.cancel();
@@ -213,10 +263,6 @@ public abstract class RecipeBookWidgetPerkMixin {
         if (!himproveme$isPerkBookMode() || !isOpen()) {
             return;
         }
-        if (button != 0) {
-            cir.setReturnValue(false);
-            return;
-        }
 
         int panelX = himproveme$panelX();
         int panelY = himproveme$panelY();
@@ -230,6 +276,25 @@ public abstract class RecipeBookWidgetPerkMixin {
         PerkBookState state = ClientPerkBookState.getSnapshot();
         PerkInstanceState instance = state.getSelectedInstance();
         int selectedIndex = state.selectedIndex();
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            PerkDefinition togglePerk = himproveme$getToggleTargetPerk(mouseX, mouseY, instance);
+            if (togglePerk != null) {
+                himproveme$beginToggleHold(togglePerk.id(), selectedIndex, button);
+                cir.setReturnValue(true);
+                return;
+            }
+        }
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            himproveme$resetToggleHold();
+            cir.setReturnValue(false);
+            return;
+        }
+        if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            cir.setReturnValue(false);
+            return;
+        }
 
         Map<Integer, List<PerkDefinition>> perksByRow = himproveme$buildPerksByRow();
         List<Integer> rowIndexes = new ArrayList<>(perksByRow.keySet());
@@ -259,6 +324,10 @@ public abstract class RecipeBookWidgetPerkMixin {
                 }
                 if (himproveme$isInside(mouseX, mouseY, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight)) {
                     if (instance.getLevel(perk.id()) <= 0) {
+                        if (himproveme$needsWardenToken(perk) && !himproveme$hasWardenToken()) {
+                            cir.setReturnValue(true);
+                            return;
+                        }
                         ClientPlayNetworking.send(new PerkBookUpgradePayload(selectedIndex, perk.id()));
                     }
                     cir.setReturnValue(true);
@@ -348,11 +417,30 @@ public abstract class RecipeBookWidgetPerkMixin {
         context.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, border);
         context.fill(x + 1, y + 1, x + SLOT_SIZE - 1, y + SLOT_SIZE - 1, fill);
 
+        if (himproveme$drawCustomPerkIcon(context, x + 3, y + 3, definition.iconItemId())) {
+            return;
+        }
+
         Item iconItem = Registries.ITEM.get(definition.iconItemId());
         if (iconItem == Items.AIR) {
             iconItem = Items.BARRIER;
         }
         context.drawItem(new ItemStack(iconItem), x + 3, y + 3);
+    }
+
+    @Unique
+    private boolean himproveme$drawCustomPerkIcon(DrawContext context, int x, int y, Identifier iconId) {
+        if (Registries.ITEM.containsId(iconId)) {
+            return false;
+        }
+
+        Identifier textureId = Identifier.of(iconId.getNamespace(), "textures/gui/perk/" + iconId.getPath() + ".png");
+        if (client.getResourceManager().getResource(textureId).isEmpty()) {
+            return false;
+        }
+
+        context.drawTexture(textureId, x, y, 0, 0, 16, 16, 16, 16);
+        return true;
     }
 
     @Unique
@@ -372,18 +460,41 @@ public abstract class RecipeBookWidgetPerkMixin {
                 break;
             }
         }
+        if (himproveme$needsWardenToken(definition) && !himproveme$hasWardenToken()) {
+            canUnlock = false;
+        }
         canUnlock = !unlocked && canUnlock;
 
         int width = 46;
         int height = 14;
-        int bg = unlocked ? 0xFF2B6E39 : canUnlock ? 0xFF8B5E2F : 0xFF474747;
+        int bg;
+        Text label;
+        if (unlocked && definition.toggleable()) {
+            boolean enabled = instance.isEnabled(definition.id());
+            bg = enabled ? 0xFF2B6E39 : 0xFF6A4F1F;
+            label = Text.translatable(enabled ? "perk.himproveme.enabled" : "perk.himproveme.disabled");
+        } else {
+            bg = unlocked ? 0xFF2B6E39 : canUnlock ? 0xFF8B5E2F : 0xFF474747;
+            label = unlocked ? Text.translatable("perk.himproveme.unlocked") : canUnlock
+                    ? Text.translatable("perk.himproveme.unlock")
+                    : Text.translatable("perk.himproveme.locked");
+        }
         context.fill(x, y, x + width, y + height, bg);
         context.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xFF1A1A1A);
-
-        Text label = unlocked ? Text.translatable("perk.himproveme.unlocked") : canUnlock
-                ? Text.translatable("perk.himproveme.unlock")
-                : Text.translatable("perk.himproveme.locked");
         context.drawCenteredTextWithShadow(client.textRenderer, label, x + width / 2, y + 3, 0xFFFFFFFF);
+    }
+
+    @Unique
+    private void himproveme$drawToggleOverlay(DrawContext context, int x, int topY, int bottomY, PerkDefinition definition, int selectedIndex, PerkInstanceState instance) {
+        if (!himproveme$isToggleHoldActive(definition, selectedIndex) || bottomY <= topY) {
+            return;
+        }
+
+        float progress = himproveme$getToggleHoldProgress();
+        int fillHeight = Math.max(1, Math.round((bottomY - topY) * progress));
+        int color = instance.isEnabled(definition.id()) ? 0x886F1A1A : 0x88306F4B;
+        context.fill(x, topY, x + 46, topY + fillHeight, color);
+        context.fill(x, topY + fillHeight - 1, x + 46, topY + fillHeight, 0xFFD9E5F2);
     }
 
     @Unique
@@ -442,6 +553,74 @@ public abstract class RecipeBookWidgetPerkMixin {
     }
 
     @Unique
+    private void himproveme$updateToggleHold(int mouseX, int mouseY, int selectedIndex, PerkInstanceState instance) {
+        if (himproveme$toggleHoldPerkId == null || client == null) {
+            return;
+        }
+
+        long handle = client.getWindow().getHandle();
+        if (himproveme$toggleHoldMouseButton < 0
+                || GLFW.glfwGetMouseButton(handle, himproveme$toggleHoldMouseButton) != GLFW.GLFW_PRESS) {
+            himproveme$resetToggleHold();
+            return;
+        }
+
+        PerkDefinition currentTarget = himproveme$getToggleTargetPerk(mouseX, mouseY, instance);
+        if (currentTarget == null
+                || !currentTarget.id().equals(himproveme$toggleHoldPerkId)
+                || selectedIndex != himproveme$toggleHoldInstanceIndex) {
+            himproveme$resetToggleHold();
+            return;
+        }
+
+        if (himproveme$toggleHoldCompleted || himproveme$getToggleHoldProgress() < 1.0F) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new PerkBookTogglePayload(selectedIndex, currentTarget.id()));
+        himproveme$toggleHoldCompleted = true;
+    }
+
+    @Unique
+    private float himproveme$getToggleHoldProgress() {
+        if (himproveme$toggleHoldPerkId == null) {
+            return 0.0F;
+        }
+
+        if (himproveme$toggleHoldCompleted) {
+            return 1.0F;
+        }
+
+        long elapsedMs = Math.max(0L, Util.getMeasuringTimeMs() - himproveme$toggleHoldStartTimeMs);
+        return Math.min(1.0F, elapsedMs / (float) TOGGLE_HOLD_DURATION_MS);
+    }
+
+    @Unique
+    private boolean himproveme$isToggleHoldActive(PerkDefinition definition, int selectedIndex) {
+        return himproveme$toggleHoldPerkId != null
+                && himproveme$toggleHoldPerkId.equals(definition.id())
+                && himproveme$toggleHoldInstanceIndex == selectedIndex;
+    }
+
+    @Unique
+    private void himproveme$beginToggleHold(Identifier perkId, int selectedIndex, int mouseButton) {
+        himproveme$toggleHoldPerkId = perkId;
+        himproveme$toggleHoldInstanceIndex = selectedIndex;
+        himproveme$toggleHoldStartTimeMs = Util.getMeasuringTimeMs();
+        himproveme$toggleHoldCompleted = false;
+        himproveme$toggleHoldMouseButton = mouseButton;
+    }
+
+    @Unique
+    private void himproveme$resetToggleHold() {
+        himproveme$toggleHoldPerkId = null;
+        himproveme$toggleHoldInstanceIndex = -1;
+        himproveme$toggleHoldStartTimeMs = 0L;
+        himproveme$toggleHoldCompleted = false;
+        himproveme$toggleHoldMouseButton = -1;
+    }
+
+    @Unique
     private @Nullable PerkDefinition himproveme$getHoveredPerk(int mouseX, int mouseY) {
         int panelX = himproveme$panelX();
         int panelY = himproveme$panelY();
@@ -474,5 +653,55 @@ public abstract class RecipeBookWidgetPerkMixin {
         }
 
         return null;
+    }
+
+    @Unique
+    private @Nullable PerkDefinition himproveme$getToggleTargetPerk(double mouseX, double mouseY, PerkInstanceState instance) {
+        int panelX = himproveme$panelX();
+        int panelY = himproveme$panelY();
+        int contentX = panelX + CONTENT_X_OFFSET;
+        int contentY = panelY + CONTENT_Y_OFFSET;
+        if (!himproveme$isInside(mouseX, mouseY, contentX, contentY, contentX + CONTENT_WIDTH, contentY + CONTENT_HEIGHT)) {
+            return null;
+        }
+
+        Map<Integer, List<PerkDefinition>> perksByRow = himproveme$buildPerksByRow();
+        List<Integer> rowIndexes = new ArrayList<>(perksByRow.keySet());
+        rowIndexes.sort(Integer::compareTo);
+
+        for (int visualRowIndex = 0; visualRowIndex < rowIndexes.size(); visualRowIndex++) {
+            int rowId = rowIndexes.get(visualRowIndex);
+            List<PerkDefinition> rowPerks = perksByRow.get(rowId);
+            int rowBaseY = contentY + himproveme$contentOffsetY + visualRowIndex * ROW_HEIGHT;
+            int slotY = rowBaseY + 14;
+            int buttonY = slotY + SLOT_SIZE + 17;
+            int maxColumn = himproveme$getMaxColumn(rowId, rowPerks);
+
+            for (int col = 0; col <= maxColumn; col++) {
+                PerkDefinition perk = himproveme$getPerkAtColumn(rowPerks, col);
+                if (perk == null || !perk.toggleable() || instance.getLevel(perk.id()) <= 0) {
+                    continue;
+                }
+
+                int cellX = contentX + CELL_START_X + himproveme$contentOffsetX + col * CELL_WIDTH;
+                if (himproveme$isInside(mouseX, mouseY, cellX - 10, slotY, cellX + 36, buttonY + 14)) {
+                    return perk;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Unique
+    private boolean himproveme$needsWardenToken(PerkDefinition definition) {
+        return WardenPerkHelper.isWardenPerk(definition.id());
+    }
+
+    @Unique
+    private boolean himproveme$hasWardenToken() {
+        return client != null
+                && client.player != null
+                && client.player.getMainHandStack().isOf(ModItem.WARDEN_TOKEN);
     }
 }

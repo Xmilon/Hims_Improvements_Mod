@@ -1,0 +1,36 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:trident",
+    {
+      "id": "minecraft:copper_spear",
+      "required": false
+    },
+    "minecraft:wooden_spear",
+    "minecraft:stone_spear",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:diamond_spear",
+    "minecraft:netherite_spear",
+    {
+      "id": "oreganized:electrum_spear",
+      "required": false
+    },
+    {
+      "id": "dragonloot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "ender_dragon_loot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "enderitemod:enderite_spear",
+      "required": false
+    },
+    "himproveme:ender_spear",
+    "himproveme:ender_staff",
+    "himproveme:breeze_staff",
+    "himproveme:blowgun"
+  ]
+}

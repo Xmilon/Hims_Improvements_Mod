@@ -18,6 +18,11 @@ public final class ModRecipes {
             Identifier.of(HimProveMe.MOD_ID, "crafting_special_lockable_container_toggle"),
             new SpecialRecipeSerializer<>(LockableContainerToggleRecipe::new)
     );
+    public static final RecipeSerializer<MegaRocketCraftingRecipe> MEGA_ROCKET_CRAFTING = Registry.register(
+            Registries.RECIPE_SERIALIZER,
+            Identifier.of(HimProveMe.MOD_ID, "crafting_special_mega_rocket"),
+            new SpecialRecipeSerializer<>(MegaRocketCraftingRecipe::new)
+    );
 
     private ModRecipes() {
     }

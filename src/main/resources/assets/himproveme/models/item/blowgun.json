@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "himproveme:item/blowgun"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "himproveme:held": 1.0
+      },
+      "model": "himproveme:item/blowgun_in_hand"
+    },
+    {
+      "predicate": {
+        "himproveme:armed": 1.0
+      },
+      "model": "himproveme:item/blowgun_armed_in_hand"
+    }
+  ]
+}

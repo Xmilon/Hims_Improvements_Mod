@@ -1,0 +1,25 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "spears"
+      ]
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "item": "himproveme:ender_spear"
+    }
+  },
+  "pattern": [
+    "S ",
+    " S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "himproveme:double_ender_spear"
+  }
+}

@@ -1,16 +1,20 @@
 package net.xmilon.himproveme.world;
 
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTables;
+import net.minecraft.loot.condition.KilledByPlayerLootCondition;
 import net.minecraft.loot.condition.RandomChanceLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.xmilon.himproveme.item.ModItem;
 
 public final class ModLootTableModifiers {
     private static final float MINESHAFT_BUNDLE_CHANCE = 0.15f;
     private static final float DUNGEON_BUNDLE_CHANCE = 0.10f;
+    private static final float WARDEN_TOKEN_DROP_CHANCE = 0.10f;
 
     private ModLootTableModifiers() {
     }
@@ -25,6 +29,8 @@ public final class ModLootTableModifiers {
                 tableBuilder.pool(createBundlePool(MINESHAFT_BUNDLE_CHANCE));
             } else if (LootTables.SIMPLE_DUNGEON_CHEST.equals(key)) {
                 tableBuilder.pool(createBundlePool(DUNGEON_BUNDLE_CHANCE));
+            } else if (EntityType.WARDEN.getLootTableId().equals(key)) {
+                tableBuilder.pool(createWardenTokenPool());
             }
         });
     }
@@ -34,5 +40,13 @@ public final class ModLootTableModifiers {
                 .rolls(ConstantLootNumberProvider.create(1.0f))
                 .conditionally(RandomChanceLootCondition.builder(chance))
                 .with(ItemEntry.builder(Items.BUNDLE));
+    }
+
+    private static LootPool.Builder createWardenTokenPool() {
+        return LootPool.builder()
+                .rolls(ConstantLootNumberProvider.create(1.0f))
+                .conditionally(KilledByPlayerLootCondition.builder())
+                .conditionally(RandomChanceLootCondition.builder(WARDEN_TOKEN_DROP_CHANCE))
+                .with(ItemEntry.builder(ModItem.WARDEN_TOKEN));
     }
 }

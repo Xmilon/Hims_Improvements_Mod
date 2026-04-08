@@ -27,6 +27,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 	public void generate(RecipeExporter exporter) {
 		registerGemRecipes(exporter);
 		registerCraftingRecipes(exporter);
+		registerDaggerRecipes(exporter);
 		registerStaffRecipes(exporter);
 		registerBundle(exporter);
 		registerEnderIngot(exporter);
@@ -120,6 +121,13 @@ public class ModRecipeProvider extends FabricRecipeProvider {
  */
 	}
 
+	private void registerDaggerRecipes(RecipeExporter exporter) {
+		registerDaggerRecipe(exporter, ModItem.WOOD_DAGGER, Ingredient.fromTag(net.minecraft.registry.tag.ItemTags.PLANKS), Items.STICK);
+		registerDaggerRecipe(exporter, ModItem.STONE_DAGGER, Ingredient.fromTag(net.minecraft.registry.tag.ItemTags.STONE_TOOL_MATERIALS), Items.STICK);
+		registerDaggerRecipe(exporter, ModItem.GOLD_DAGGER, Ingredient.ofItems(Items.GOLD_INGOT), Items.STICK);
+		registerDaggerRecipe(exporter, ModItem.IRON_DAGGER, Ingredient.ofItems(Items.IRON_INGOT), Items.STICK);
+	}
+
 	private void registerBundle(RecipeExporter exporter) {
 		ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, Items.BUNDLE)
 				.pattern(" C ")
@@ -141,6 +149,17 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 				.input('#', ModItem.ENDER_ESSENCE)
 				.input('U', Items.DRAGON_BREATH)
 				.criterion(hasItem(ModItem.ENDER_ESSENCE), conditionsFromItem(ModItem.ENDER_ESSENCE))
+				.offerTo(exporter);
+	}
+
+	private void registerDaggerRecipe(RecipeExporter exporter, net.minecraft.item.Item result, Ingredient bladeMaterial, net.minecraft.item.Item handleMaterial) {
+		ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, result)
+				.pattern(" X ")
+				.pattern("  X")
+				.pattern(" I ")
+				.input('X', bladeMaterial)
+				.input('I', handleMaterial)
+				.criterion(hasItem(handleMaterial), conditionsFromItem(handleMaterial))
 				.offerTo(exporter);
 	}
 

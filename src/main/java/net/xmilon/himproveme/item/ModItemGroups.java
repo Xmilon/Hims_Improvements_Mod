@@ -29,7 +29,9 @@ public class ModItemGroups {
                         entries.add(ModItem.DEAD_NETHER_CORE);
                         entries.add(ModItem.NETHER_CORE);
                         entries.add(ModItem.GODLY_ELYTRA);
+                        entries.add(ModItem.MEGA_ROCKET);
                         entries.add(ModItem.SPECTRAL_BOW);
+                        entries.add(ModItem.BLOWGUN);
                         entries.add(ModItem.ENDER_BUNDLE);
                         entries.add(Items.BUNDLE);
                         entries.add(ModItem.BREEZE_STAFF);
@@ -37,6 +39,19 @@ public class ModItemGroups {
                         entries.add(ModItem.ENDER_ESSENCE);
                         entries.add(ModItem.DODO_SPAWN_EGG);
                         entries.add(ModItem.ENDER_INGOT);
+                        entries.add(ModItem.WOOD_DAGGER);
+                        entries.add(ModItem.STONE_DAGGER);
+                        entries.add(ModItem.GOLD_DAGGER);
+                        entries.add(ModItem.IRON_DAGGER);
+                        entries.add(ModItem.DIAMOND_DAGGER);
+                        entries.add(ModItem.NETHERITE_DAGGER);
+                        entries.add(ModItem.ENDER_DAGGER);
+                        if (ModItem.ENDER_SPEAR != null) {
+                            entries.add(ModItem.ENDER_SPEAR);
+                        }
+                        if (ModItem.DOUBLE_ENDER_SPEAR != null) {
+                            entries.add(ModItem.DOUBLE_ENDER_SPEAR);
+                        }
                         entries.add(ModItem.ENDER_SWORD);
                         entries.add(ModItem.ENDER_PICKAXE);
                         entries.add(ModItem.ENDER_AXE);

@@ -7,12 +7,15 @@
     },
     "C": {
       "item": "minecraft:netherite_ingot"
+    },
+    "U": {
+      "item": "minecraft:dragon_breath"
     }
   },
   "pattern": [
     "###",
     "#C#",
-    "###"
+    "#U#"
   ],
   "result": {
     "count": 1,

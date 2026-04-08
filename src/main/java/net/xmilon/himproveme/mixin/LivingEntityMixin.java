@@ -4,13 +4,24 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.xmilon.himproveme.access.DualWieldTargetAccess;
 import net.xmilon.himproveme.item.ModItem;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin {
+public abstract class LivingEntityMixin implements DualWieldTargetAccess {
+    @Shadow
+    public int hurtTime;
+
+    @Shadow
+    public int maxHurtTime;
+
+    @Shadow
+    protected float lastDamageTaken;
+
     @Redirect(
             method = "tickFallFlying",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z")
@@ -39,5 +50,12 @@ public abstract class LivingEntityMixin {
             return;
         }
         stack.damage(amount, entity, slot);
+    }
+
+    @Override
+    public void himproveme$resetDualWieldDamageImmunity() {
+        this.hurtTime = 0;
+        this.maxHurtTime = 0;
+        this.lastDamageTaken = 0.0f;
     }
 }

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "himproveme:double_ender_spear",
+      "required": false
+    }
+  ]
+}

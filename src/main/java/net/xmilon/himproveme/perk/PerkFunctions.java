@@ -53,15 +53,39 @@ public final class PerkFunctions {
                 )
         );
 
-        // Fireproof: placeholder behavior hook.
+        // Fireproof: burn-time reduction is handled directly in the entity fire-tick mixin.
         register(
                 Identifier.of(HimProveMe.MOD_ID, "fireproof"),
                 new FunctionBundle(
                         player -> {
-                            // Unlock hook intentionally empty for now.
+                            // No unlock burst needed.
                         },
                         (player, level) -> {
-                            // Active/tick hook intentionally empty for now.
+                            // No ticking function; the fire-tick hook checks the perk directly.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "friendly_piglins"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; piglin AI hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "piglin_bartering"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; piglin interaction hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
                         }
                 )
         );
@@ -104,6 +128,120 @@ public final class PerkFunctions {
                         }
                 )
         );
+
+        // Muffled Steps: movement behavior is handled directly in entity mixins.
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "muffled_steps"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed.
+                        },
+                        (player, level) -> {
+                            // No ticking function; entity hooks check the perk state directly.
+                        }
+                )
+        );
+
+        // Sculk Invisibility: vibration suppression is handled directly in the world game-event mixin.
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "sculk_invisibility"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed.
+                        },
+                        (player, level) -> {
+                            // No ticking function; world game-event hooks check the perk state directly.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "lucky_totems"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; illager loot hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "friendly_pillagers"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; raider AI hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "domesticated_ravanger"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; ravager interactions check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "job_application"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; nitwit interactions check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "market_connections"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; villager trading hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "travelling_treasures"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; wandering trader hooks check the perk directly.
+                        },
+                        (player, level) -> {
+                            // No ticking function.
+                        }
+                )
+        );
+
+        register(
+                Identifier.of(HimProveMe.MOD_ID, "acrobat"),
+                new FunctionBundle(
+                        player -> {
+                            // No unlock burst needed; the mobility ability is handled by the acrobat helper.
+                        },
+                        (player, level) -> {
+                            // No passive tick hook; activation is client-input driven.
+                        }
+                )
+        );
+
+        register(Identifier.of(HimProveMe.MOD_ID, "warden_bleeding"), FunctionBundle.empty());
+        register(Identifier.of(HimProveMe.MOD_ID, "warden_stunned"), FunctionBundle.empty());
+        register(Identifier.of(HimProveMe.MOD_ID, "warden_frenzy"), FunctionBundle.empty());
     }
 
     public static void runUnlock(ServerPlayerEntity player, Identifier perkId) {

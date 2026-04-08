@@ -2,32 +2,47 @@
   "note": "Placeholder perk filesystem scaffold using vanilla assets.",
   "perks": [
     {
-      "id": "himproveme:lava_swim_wip",
-      "category_key": "perk.himproveme.category.wip",
-      "name_key": "perk.himproveme.lava_swim_wip",
-      "description_key": "perk.himproveme.lava_swim_wip.desc",
-      "unlock_function_key": "perk.himproveme.lava_swim_wip.function",
-      "row": 0,
-      "column": 0,
-      "required_perks": [],
-      "icon_item": "minecraft:lava_bucket",
-      "unlock_sound": "himproveme:perk.lava_swim_unlock",
-      "unlock_type": "one_time"
-    },
-    {
       "id": "himproveme:fireproof",
-      "category_key": "perk.himproveme.category.wip",
+      "category_key": "perk.himproveme.category.nether",
       "name_key": "perk.himproveme.fireproof",
       "description_key": "perk.himproveme.fireproof.desc",
       "unlock_function_key": "perk.himproveme.fireproof.function",
       "row": 0,
+      "column": 0,
+      "required_perks": [],
+      "icon_item": "minecraft:blaze_powder",
+      "unlock_sound": "himproveme:perk.fireproof_unlock",
+      "unlock_type": "one_time"
+    },
+    {
+      "id": "himproveme:friendly_piglins",
+      "category_key": "perk.himproveme.category.nether",
+      "name_key": "perk.himproveme.friendly_piglins",
+      "description_key": "perk.himproveme.friendly_piglins.desc",
+      "unlock_function_key": "perk.himproveme.friendly_piglins.function",
+      "row": 0,
       "column": 2,
       "required_perks": [
-        "himproveme:lava_swim_wip"
+        "himproveme:fireproof"
       ],
-      "icon_item": "minecraft:blaze_powder",
+      "icon_item": "minecraft:piglin_head",
       "unlock_type": "one_time",
-      "unlock_sound": "himproveme:perk.fireproof_unlock"
+      "unlock_sound": "himproveme:perk.friendly_piglins_unlock"
+    },
+    {
+      "id": "himproveme:piglin_bartering",
+      "category_key": "perk.himproveme.category.nether",
+      "name_key": "perk.himproveme.piglin_bartering",
+      "description_key": "perk.himproveme.piglin_bartering.desc",
+      "unlock_function_key": "perk.himproveme.piglin_bartering.function",
+      "row": 0,
+      "column": 4,
+      "required_perks": [
+        "himproveme:friendly_piglins"
+      ],
+      "icon_item": "minecraft:gold_ingot",
+      "unlock_type": "one_time",
+      "unlock_sound": "himproveme:perk.piglin_bartering_unlock"
     }
   ]
 }

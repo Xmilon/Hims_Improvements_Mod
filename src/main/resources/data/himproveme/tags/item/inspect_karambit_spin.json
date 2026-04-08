@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "himproveme:wood_dagger",
+    "himproveme:stone_dagger",
+    "himproveme:gold_dagger",
+    "himproveme:iron_dagger",
+    "himproveme:diamond_dagger",
+    "himproveme:netherite_dagger",
+    "himproveme:ender_dagger"
+  ]
+}

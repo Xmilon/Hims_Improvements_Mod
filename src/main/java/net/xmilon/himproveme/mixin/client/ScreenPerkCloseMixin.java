@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.network.packet.c2s.play.RecipeCategoryOptionsC2SPacket;
 import net.minecraft.recipe.book.RecipeBookCategory;
+import net.xmilon.himproveme.client.CreativePerkBookClientState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,5 +31,6 @@ public abstract class ScreenPerkCloseMixin {
         if (client.getNetworkHandler() != null) {
             client.getNetworkHandler().sendPacket(new RecipeCategoryOptionsC2SPacket(RecipeBookCategory.CRAFTING, false, filtering));
         }
+        CreativePerkBookClientState.clear();
     }
 }

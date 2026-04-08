@@ -19,6 +19,15 @@ public class ModTags {
 
     public static class Items {
         public static final TagKey<Item> TRANSFORMABLE_ITEMS = createTag("transformable_items");
+        public static final TagKey<Item> DUAL_WIELDABLE = createTag("dual_wieldable");
+        public static final TagKey<Item> INSPECT_SPINNABLE = createTag("inspect_spinnable");
+        public static final TagKey<Item> INSPECT_Y_SPIN = createTag("inspect_y_spin");
+        public static final TagKey<Item> INSPECT_HALF_SPIN = createTag("inspect_half_spin");
+        public static final TagKey<Item> INSPECT_KARAMBIT_SPIN = createTag("inspect_karambit_spin");
+        public static final TagKey<Item> INSPECT_HEAVY_SPIN = createTag("inspect_heavy_spin");
+        public static final TagKey<Item> INSPECT_STAFF_SPIN = createTag("inspect_staff_spin");
+        public static final TagKey<Item> RAVAGER_TAMING_FOOD = createTag("ravager_taming_food");
+        public static final TagKey<Item> RAVAGER_STORAGE_ATTACHMENTS = createTag("ravager_storage_attachments");
 
         private static TagKey<Item> createTag(String name) {
             return TagKey.of(RegistryKeys.ITEM, Identifier.of(HimProveMe.MOD_ID, name));

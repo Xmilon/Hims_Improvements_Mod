@@ -1,0 +1,36 @@
+{
+  "parent": "minecraft:item/generated",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [90, 0, 0],
+      "translation": [-1.6, 0.35, 4.7],
+      "scale": [0.64, 0.64, 0.64]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [90, 0, 0],
+      "translation": [-1.6, 0.35, 4.7],
+      "scale": [0.64, 0.64, 0.64]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, -90, -20],
+      "translation": [0.95, 3.25, 1.35],
+      "scale": [0.74, 0.74, 0.74]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 90, 20],
+      "translation": [0.95, 3.25, 1.35],
+      "scale": [0.74, 0.74, 0.74]
+    },
+    "ground": {
+      "translation": [0.0, 2.0, 0.0],
+      "scale": [0.9, 0.9, 0.9]
+    },
+    "fixed": {
+      "rotation": [0, 90, 0],
+      "scale": [0.92, 0.92, 0.92]
+    }
+  },
+  "textures": {
+    "layer0": "himproveme:item/blowgun"
+  }
+}

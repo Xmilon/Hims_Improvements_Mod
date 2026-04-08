@@ -7,16 +7,20 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class PerkInstanceState {
     private static final String NAME_KEY = "name";
     private static final String PERKS_KEY = "perks";
+    private static final String DISABLED_PERKS_KEY = "disabled_perks";
     private static final String PERK_ID_KEY = "id";
     private static final String LEVEL_KEY = "level";
 
     private final String name;
     private final Map<Identifier, Integer> levelsByPerk = new HashMap<>();
+    private final Set<Identifier> disabledPerks = new HashSet<>();
 
     public PerkInstanceState(String name) {
         this.name = name;
@@ -31,20 +35,60 @@ public class PerkInstanceState {
     }
 
     public void setLevel(Identifier perkId, int level) {
-        levelsByPerk.put(perkId, Math.max(0, level));
+        int previousLevel = getLevel(perkId);
+        int clampedLevel = Math.max(0, level);
+        if (clampedLevel <= 0) {
+            levelsByPerk.remove(perkId);
+            disabledPerks.remove(perkId);
+            return;
+        }
+
+        levelsByPerk.put(perkId, clampedLevel);
+        if (previousLevel <= 0) {
+            disabledPerks.remove(perkId);
+        }
+    }
+
+    public boolean isEnabled(Identifier perkId) {
+        return getLevel(perkId) > 0 && !disabledPerks.contains(perkId);
+    }
+
+    public void setEnabled(Identifier perkId, boolean enabled) {
+        if (getLevel(perkId) <= 0) {
+            disabledPerks.remove(perkId);
+            return;
+        }
+
+        if (enabled) {
+            disabledPerks.remove(perkId);
+        } else {
+            disabledPerks.add(perkId);
+        }
+    }
+
+    public boolean toggleEnabled(Identifier perkId) {
+        if (getLevel(perkId) <= 0) {
+            return false;
+        }
+
+        setEnabled(perkId, !isEnabled(perkId));
+        return true;
     }
 
     public boolean removePerk(Identifier perkId) {
+        disabledPerks.remove(perkId);
         return levelsByPerk.remove(perkId) != null;
     }
 
     public void clearPerks() {
         levelsByPerk.clear();
+        disabledPerks.clear();
     }
 
     public PerkInstanceState copy() {
         PerkInstanceState copied = new PerkInstanceState(name);
         copied.levelsByPerk.putAll(levelsByPerk);
+        copied.disabledPerks.addAll(disabledPerks);
         return copied;
     }
 
@@ -60,6 +104,12 @@ public class PerkInstanceState {
             perkList.add(perkNbt);
         }
         nbt.put(PERKS_KEY, perkList);
+
+        NbtList disabledList = new NbtList();
+        for (Identifier perkId : disabledPerks) {
+            disabledList.add(NbtString.of(perkId.toString()));
+        }
+        nbt.put(DISABLED_PERKS_KEY, disabledList);
         return nbt;
     }
 
@@ -82,6 +132,16 @@ public class PerkInstanceState {
             }
             int level = Math.max(0, perkNbt.getInt(LEVEL_KEY));
             instance.setLevel(perkId, level);
+        }
+
+        if (nbt.contains(DISABLED_PERKS_KEY, NbtElement.LIST_TYPE)) {
+            NbtList disabledPerks = nbt.getList(DISABLED_PERKS_KEY, NbtElement.STRING_TYPE);
+            for (int i = 0; i < disabledPerks.size(); i++) {
+                Identifier perkId = Identifier.tryParse(disabledPerks.getString(i));
+                if (perkId != null && instance.getLevel(perkId) > 0) {
+                    instance.setEnabled(perkId, false);
+                }
+            }
         }
 
         return instance;

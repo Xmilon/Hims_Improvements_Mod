@@ -1,0 +1,81 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:wooden_sword",
+    "minecraft:stone_sword",
+    "minecraft:iron_sword",
+    "minecraft:golden_sword",
+    "minecraft:diamond_sword",
+    "minecraft:netherite_sword",
+    "minecraft:wooden_axe",
+    "minecraft:stone_axe",
+    "minecraft:iron_axe",
+    "minecraft:golden_axe",
+    "minecraft:diamond_axe",
+    "minecraft:netherite_axe",
+    "minecraft:wooden_pickaxe",
+    "minecraft:stone_pickaxe",
+    "minecraft:iron_pickaxe",
+    "minecraft:golden_pickaxe",
+    "minecraft:diamond_pickaxe",
+    "minecraft:netherite_pickaxe",
+    "minecraft:wooden_shovel",
+    "minecraft:stone_shovel",
+    "minecraft:iron_shovel",
+    "minecraft:golden_shovel",
+    "minecraft:diamond_shovel",
+    "minecraft:netherite_shovel",
+    "minecraft:wooden_hoe",
+    "minecraft:stone_hoe",
+    "minecraft:iron_hoe",
+    "minecraft:golden_hoe",
+    "minecraft:diamond_hoe",
+    "minecraft:netherite_hoe",
+    "minecraft:trident",
+    "minecraft:mace",
+    {
+      "id": "minecraft:copper_spear",
+      "required": false
+    },
+    "minecraft:wooden_spear",
+    "minecraft:stone_spear",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:diamond_spear",
+    "minecraft:netherite_spear",
+    {
+      "id": "oreganized:electrum_spear",
+      "required": false
+    },
+    {
+      "id": "dragonloot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "ender_dragon_loot:dragon_spear",
+      "required": false
+    },
+    {
+      "id": "enderitemod:enderite_spear",
+      "required": false
+    },
+    "himproveme:wood_dagger",
+    "himproveme:stone_dagger",
+    "himproveme:gold_dagger",
+    "himproveme:iron_dagger",
+    "himproveme:diamond_dagger",
+    "himproveme:netherite_dagger",
+    "himproveme:ender_dagger",
+    "himproveme:ender_sword",
+    "himproveme:ender_pickaxe",
+    "himproveme:ender_axe",
+    "himproveme:ender_shovel",
+    "himproveme:ender_hoe",
+    "himproveme:ender_spear",
+    "himproveme:double_ender_spear",
+    "himproveme:ender_staff",
+    "himproveme:breeze_staff",
+    "himproveme:blowgun",
+    "himproveme:chisel"
+  ]
+}

@@ -3,7 +3,8 @@
     "subtitle": "perk.himproveme.lava_swim",
     "sounds": [
       {
-        "name": "minecraft:entity.player.levelup"
+        "name": "minecraft:entity.player.levelup",
+        "type": "event"
       }
     ]
   },
@@ -12,7 +13,156 @@
     "sounds": [
       {
         "name": "minecraft:entity.player.levelup",
+        "type": "event",
         "pitch": 1.1
+      }
+    ]
+  },
+  "perk.friendly_piglins_unlock": {
+    "subtitle": "perk.himproveme.friendly_piglins",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.95
+      }
+    ]
+  },
+  "perk.piglin_bartering_unlock": {
+    "subtitle": "perk.himproveme.piglin_bartering",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.05
+      }
+    ]
+  },
+  "perk.infinite_ender_pearl_unlock": {
+    "subtitle": "perk.himproveme.infinite_ender_pearl",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "perk.ender_stare_unlock": {
+    "subtitle": "perk.himproveme.ender_stare",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.0
+      }
+    ]
+  },
+  "perk.safe_levitation_unlock": {
+    "subtitle": "perk.himproveme.safe_levitation",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.12
+      }
+    ]
+  },
+  "perk.muffled_steps_unlock": {
+    "subtitle": "perk.himproveme.muffled_steps",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "perk.sculk_invisibility_unlock": {
+    "subtitle": "perk.himproveme.sculk_invisibility",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.75
+      }
+    ]
+  },
+  "perk.job_application_unlock": {
+    "subtitle": "perk.himproveme.job_application",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.96
+      }
+    ]
+  },
+  "perk.market_connections_unlock": {
+    "subtitle": "perk.himproveme.market_connections",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.02
+      }
+    ]
+  },
+  "perk.travelling_treasures_unlock": {
+    "subtitle": "perk.himproveme.travelling_treasures",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.08
+      }
+    ]
+  },
+  "perk.lucky_totems_unlock": {
+    "subtitle": "perk.himproveme.lucky_totems",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 1.05
+      }
+    ]
+  },
+  "perk.friendly_pillagers_unlock": {
+    "subtitle": "perk.himproveme.friendly_pillagers",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.95
+      }
+    ]
+  },
+  "perk.domesticated_ravanger_unlock": {
+    "subtitle": "perk.himproveme.domesticated_ravanger",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.levelup",
+        "type": "event",
+        "pitch": 0.85
+      }
+    ]
+  },
+  "item.dagger.hit": {
+    "sounds": [
+      {
+        "name": "himproveme:item/dagger/slash_hit"
+      },
+      {
+        "name": "himproveme:item/dagger/slash_hit1"
+      }
+    ]
+  },
+  "item.dagger.air": {
+    "sounds": [
+      {
+        "name": "himproveme:item/dagger/slash_air",
+        "volume": 0.7
       }
     ]
   },

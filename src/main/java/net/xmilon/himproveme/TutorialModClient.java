@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
@@ -23,6 +24,11 @@ import java.util.List;
 import net.minecraft.network.packet.c2s.play.RecipeCategoryOptionsC2SPacket;
 import net.minecraft.recipe.book.RecipeBookCategory;
 import net.minecraft.util.Identifier;
+import net.xmilon.himproveme.client.AcrobatPerkClientHelper;
+import net.xmilon.himproveme.client.BlowgunClientHelper;
+import net.xmilon.himproveme.client.DaggerGripClientHelper;
+import net.xmilon.himproveme.client.InspectAnimationHelper;
+import net.xmilon.himproveme.client.WardenPerkClientHelper;
 import net.xmilon.himproveme.entity.ModEntities;
 import net.xmilon.himproveme.entity.client.DodoModel;
 import net.xmilon.himproveme.entity.client.DodoRenderer;
@@ -30,13 +36,19 @@ import net.xmilon.himproveme.item.ModItem;
 import net.xmilon.himproveme.access.HandledScreenBundleScrollAccess;
 import net.xmilon.himproveme.item.custom.BundleUpgradeHelper;
 import net.xmilon.himproveme.item.custom.LockableContainerHelper;
+import net.xmilon.himproveme.leveling.ClientLevelingState;
 import net.xmilon.himproveme.network.BundleScrollNetworking;
 import net.xmilon.himproveme.network.BundleScrollPayload;
 import net.xmilon.himproveme.network.GodlyElytraBoostPayload;
 import net.xmilon.himproveme.network.ShulkerScrollPayload;
 import net.xmilon.himproveme.network.SpecialAbilityTogglePayload;
+import net.xmilon.himproveme.network.leveling.LevelingSyncPayload;
 import net.xmilon.himproveme.network.perk.PerkBookSyncPayload;
+import net.xmilon.himproveme.network.perk.VillagerTradeStatusPayload;
+import net.xmilon.himproveme.perk.ClientVillagerTradeStatus;
 import net.xmilon.himproveme.perk.ClientPerkBookState;
+import net.xmilon.himproveme.perk.PerkBookState;
+import net.xmilon.himproveme.perk.PerkBookStateHolder;
 import net.xmilon.himproveme.prone.ProneStatePayload;
 import net.xmilon.himproveme.item.custom.StasisBinding;
 import org.lwjgl.glfw.GLFW;
@@ -62,13 +74,22 @@ public class TutorialModClient implements ClientModInitializer{
             GLFW.GLFW_KEY_C,
             "category.himproveme.keys"
     ));
+    private static final KeyBinding INSPECT_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.himproveme.inspect",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_X,
+            "category.himproveme.keys"
+    ));
     private static boolean clientProneActive = false;
     private static boolean proneKeyWasDown = false;
 
     @Override
     public void onInitializeClient() {
         registerSpectralBowPredicates();
+        registerBlowgunPredicates();
         registerPerkNetworking();
+        DaggerGripClientHelper.registerReceiver();
+        WardenPerkClientHelper.register();
         registerBundleScrollInput();
         EnderBundleClientReceiver.register();
         registerBreezeStaffPredicate();
@@ -100,6 +121,11 @@ public class TutorialModClient implements ClientModInitializer{
             while (SPECIAL_ABILITY_KEY.wasPressed()) {
                 ClientPlayNetworking.send(SpecialAbilityTogglePayload.INSTANCE);
             }
+            AcrobatPerkClientHelper.tick(client);
+            BlowgunClientHelper.tick(client);
+            DaggerGripClientHelper.tick(client);
+            InspectAnimationHelper.tick(client, INSPECT_KEY);
+            WardenPerkClientHelper.tick(client);
             updateProneInput();
 
             if (client.player != null
@@ -192,9 +218,37 @@ public class TutorialModClient implements ClientModInitializer{
                         StasisBinding.isBound(stack) ? 1f : 0f);
     }
 
+    private static void registerBlowgunPredicates() {
+        ModelPredicateProviderRegistry.register(ModItem.BLOWGUN,
+                Identifier.of(HimProveMe.MOD_ID, "held"),
+                (ItemStack stack, net.minecraft.client.world.ClientWorld world, LivingEntity entity, int seed) -> {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    return entity != null
+                            && entity == client.player
+                            && client.options.getPerspective().isFirstPerson()
+                            ? 1.0F
+                            : 0.0F;
+                });
+        ModelPredicateProviderRegistry.register(ModItem.BLOWGUN,
+                Identifier.of(HimProveMe.MOD_ID, "armed"),
+                (ItemStack stack, net.minecraft.client.world.ClientWorld world, LivingEntity entity, int seed) ->
+                        entity != null && entity.isUsingItem() && entity.getActiveItem() == stack ? 1.0F : 0.0F);
+    }
+
     private static void registerPerkNetworking() {
         ClientPlayNetworking.registerGlobalReceiver(PerkBookSyncPayload.ID, (payload, context) ->
-                context.client().execute(() -> ClientPerkBookState.setFromNbt(payload.data())));
+                context.client().execute(() -> {
+                    PerkBookState state = PerkBookState.fromNbt(payload.data());
+                    ClientPerkBookState.setFromNbt(payload.data());
+
+                    if (context.client().player instanceof PerkBookStateHolder holder) {
+                        holder.himproveme$setPerkBookState(state);
+                    }
+                }));
+        ClientPlayNetworking.registerGlobalReceiver(LevelingSyncPayload.ID, (payload, context) ->
+                context.client().execute(() -> ClientLevelingState.setFromNbt(payload.data())));
+        ClientPlayNetworking.registerGlobalReceiver(VillagerTradeStatusPayload.ID, (payload, context) ->
+                context.client().execute(() -> ClientVillagerTradeStatus.setFromNbt(payload.data())));
     }
 
     private static void updateProneInput() {

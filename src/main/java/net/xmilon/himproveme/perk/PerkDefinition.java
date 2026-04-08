@@ -13,11 +13,14 @@ public record PerkDefinition(
         String unlockFunctionKey,
         Identifier iconItemId,
         Identifier unlockSoundId,
+        Identifier accentSoundId,
         int titleColor,
         int maxLevel,
+        int xpLevelCost,
         int row,
         int column,
-        List<Identifier> requiredPerkIds
+        List<Identifier> requiredPerkIds,
+        boolean toggleable
 ) {
     public PerkDefinition {
         requiredPerkIds = List.copyOf(requiredPerkIds);
