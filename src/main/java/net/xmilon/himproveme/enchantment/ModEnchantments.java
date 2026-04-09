@@ -23,6 +23,10 @@ public final class ModEnchantments {
             RegistryKeys.ENCHANTMENT,
             Identifier.of(HimProveMe.MOD_ID, "explosive_blow")
     );
+    public static final RegistryKey<Enchantment> SELF_SEPUKU = RegistryKey.of(
+            RegistryKeys.ENCHANTMENT,
+            Identifier.of(HimProveMe.MOD_ID, "self_sepuku")
+    );
 
     private ModEnchantments() {
     }

@@ -54,6 +54,10 @@ public final class WardenPerkHelper {
     private static final int CONTROL_ROLL_INTERVAL_TICKS = 20;
     private static final int FRENZY_AXIS_INTERVAL_TICKS = 30;
     private static final int SEPUKU_DURATION_TICKS = 36;
+    private static final float FRENZY_PROC_CHANCE = 0.04F;
+    private static final float FRENZY_SEPUKU_CHANCE = 0.30F;
+    private static final double FRENZY_FEAR_RETREAT_DISTANCE = 12.0D;
+    private static final double FRENZY_FEAR_RETREAT_SPEED = 1.25D;
     private static final Map<Identifier, WorldRuntime> WORLD_RUNTIMES = new HashMap<>();
     private static final Map<UUID, WardenAfflictionSyncPayload> LAST_SYNC_PAYLOADS = new HashMap<>();
 
@@ -159,6 +163,13 @@ public final class WardenPerkHelper {
     }
 
     /**
+     * Reuses the shared sepuku animation packet for any feature that wants the ritual pose without forcing a kill.
+     */
+    public static void playSepukuAnimation(LivingEntity target, int durationTicks) {
+        broadcastSepukuStart(target, durationTicks);
+    }
+
+    /**
      * Keeps the shared max-health penalty in sync with the currently active Warden perk loadout.
      */
     public static void applyHealthPenalty(PlayerEntity player) {
@@ -186,20 +197,27 @@ public final class WardenPerkHelper {
             return;
         }
 
-        WorldRuntime runtime = getRuntime(attacker.getServerWorld());
-        AfflictionState currentState = runtime.statesByTarget.get(target.getUuid());
-        if (currentState == null || currentState.canBeReplaced(attacker.getUuid(), profile.get(), attacker.getServerWorld().getTime())) {
-            if (currentState == null || currentState.getOwnerUuid().equals(attacker.getUuid()) || currentState.canBeReplaced(attacker.getUuid(), profile.get(), attacker.getServerWorld().getTime())) {
-                currentState = new AfflictionState(attacker.getUuid(), target.getUuid(), profile.get(), attacker.getServerWorld().getTime());
-                runtime.statesByTarget.put(target.getUuid(), currentState);
-            }
-        }
-
-        if (!currentState.getOwnerUuid().equals(attacker.getUuid()) || currentState.getProfile() != profile.get()) {
+        if (profile.get() == AfflictionProfile.FRENZY) {
+            tryApplyFrenzyProc(attacker, target);
             return;
         }
 
-        currentState.addBar(profile.get().computeGain(dealtDamage, target.getMaxHealth(), critical), attacker.getServerWorld().getTime());
+        long currentTick = attacker.getServerWorld().getTime();
+        WorldRuntime runtime = getRuntime(attacker.getServerWorld());
+        AfflictionState currentState = runtime.statesByTarget.get(target.getUuid());
+        if (currentState == null) {
+            currentState = new AfflictionState(attacker.getUuid(), target.getUuid(), profile.get(), currentTick);
+            runtime.statesByTarget.put(target.getUuid(), currentState);
+        } else if (!currentState.getOwnerUuid().equals(attacker.getUuid()) || currentState.getProfile() != profile.get()) {
+            if (!currentState.canBeReplaced(attacker.getUuid(), profile.get(), currentTick)) {
+                return;
+            }
+
+            currentState = new AfflictionState(attacker.getUuid(), target.getUuid(), profile.get(), currentTick);
+            runtime.statesByTarget.put(target.getUuid(), currentState);
+        }
+
+        currentState.addBar(profile.get().computeGain(dealtDamage, target.getMaxHealth(), critical), currentTick);
     }
 
     /**
@@ -244,7 +262,7 @@ public final class WardenPerkHelper {
      * Updates one afflicted entity for the current tick and returns false when the state should be discarded.
      */
     private static boolean tickState(ServerWorld world, LivingEntity target, AfflictionState state) {
-        if (!state.isSepukuTriggered() && world.getTime() > state.getLastHitTick() + DECAY_DELAY_TICKS) {
+        if (!state.isSepukuTriggered() && world.getTime() >= state.getLastHitTick() + DECAY_DELAY_TICKS) {
             state.decay(state.getProfile().getDecayPerTick(state.isEffectActive()));
         }
 
@@ -259,7 +277,7 @@ public final class WardenPerkHelper {
      * Applies the bleeding threshold, the periodic health drain and the visual marker effect.
      */
     private static boolean tickBleeding(ServerWorld world, LivingEntity target, AfflictionState state) {
-        boolean active = state.getBarPercent() >= state.getProfile().getTriggerThreshold()
+        boolean active = state.getProfile().shouldTrigger(state.getBarPercent())
                 || (state.isEffectActive() && state.getProfile().shouldRemainActive(state.getBarPercent()));
         state.setEffectActive(active);
 
@@ -280,7 +298,7 @@ public final class WardenPerkHelper {
      * Applies the stunned threshold and drives the short-lived control disruption for players and mobs.
      */
     private static boolean tickStunned(ServerWorld world, LivingEntity target, AfflictionState state) {
-        boolean active = state.getBarPercent() >= state.getProfile().getTriggerThreshold()
+        boolean active = state.getProfile().shouldTrigger(state.getBarPercent())
                 || (state.isEffectActive() && state.getProfile().shouldRemainActive(state.getBarPercent()));
         state.setEffectActive(active);
 
@@ -291,7 +309,9 @@ public final class WardenPerkHelper {
         }
 
         refreshStatusEffect(target, ModStatusEffects.STUNNED);
-        target.setSprinting(false);
+        if (state.getBarPercent() >= 100.0F) {
+            target.setSprinting(false);
+        }
 
         if (state.getBarPercent() >= 100.0F && world.getTime() >= state.getNextControlShuffleTick()) {
             if (target instanceof ServerPlayerEntity) {
@@ -305,10 +325,10 @@ public final class WardenPerkHelper {
     }
 
     /**
-     * Applies Frenzy hallucination/input pressure and starts the sepuku sequence once the bar is full.
+     * Applies Frenzy hallucination/input pressure and starts the sepuku sequence once the bar reaches its trigger threshold.
      */
     private static boolean tickFrenzy(ServerWorld world, LivingEntity target, AfflictionState state) {
-        state.setEffectActive(state.getBarPercent() > 5.0F || state.isSepukuTriggered());
+        state.setEffectActive(state.getProfile().shouldRemainActive(state.getBarPercent()) || state.isSepukuTriggered());
         if (!state.isEffectActive()) {
             state.clearControlDisruption();
             target.removeStatusEffect(ModStatusEffects.FRENZY);
@@ -337,7 +357,7 @@ public final class WardenPerkHelper {
             state.setNextControlShuffleTick(world.getTime() + FRENZY_AXIS_INTERVAL_TICKS);
         }
 
-        if (state.getBarPercent() >= 100.0F) {
+        if (state.getProfile().shouldTrigger(state.getBarPercent())) {
             state.beginSepuku(SEPUKU_DURATION_TICKS);
             broadcastSepukuStart(target, SEPUKU_DURATION_TICKS);
         }
@@ -378,6 +398,74 @@ public final class WardenPerkHelper {
         }
 
         forceMobDetour(world, mob);
+    }
+
+    /**
+     * Gives the Frenzy perk a rare direct proc instead of another bar-based affliction.
+     */
+    private static void tryApplyFrenzyProc(ServerPlayerEntity attacker, LivingEntity target) {
+        if (!(target instanceof MobEntity mob)) {
+            return;
+        }
+
+        ServerWorld world = attacker.getServerWorld();
+        if (world.getRandom().nextFloat() >= FRENZY_PROC_CHANCE) {
+            return;
+        }
+
+        if (world.getRandom().nextFloat() < FRENZY_SEPUKU_CHANCE) {
+            startFrenzySepuku(world, target, attacker.getUuid());
+            return;
+        }
+
+        scareMobFromAttacker(mob, attacker);
+    }
+
+    /**
+     * Replaces any existing affliction on the target with the ritual self-strike countdown.
+     */
+    private static void startFrenzySepuku(ServerWorld world, LivingEntity target, UUID ownerUuid) {
+        WorldRuntime runtime = getRuntime(world);
+        AfflictionState existingState = runtime.statesByTarget.get(target.getUuid());
+        if (existingState != null && existingState.isSepukuTriggered()) {
+            return;
+        }
+
+        clearTargetEffects(target);
+
+        AfflictionState sepukuState = new AfflictionState(ownerUuid, target.getUuid(), AfflictionProfile.FRENZY, world.getTime());
+        sepukuState.beginSepuku(SEPUKU_DURATION_TICKS);
+        runtime.statesByTarget.put(target.getUuid(), sepukuState);
+
+        if (target instanceof MobEntity mob) {
+            mob.setTarget(null);
+            mob.getNavigation().stop();
+        }
+
+        broadcastSepukuStart(target, SEPUKU_DURATION_TICKS);
+    }
+
+    /**
+     * Sends a mob running away from the attacker for a moment so the Frenzy proc reads as fear rather than damage.
+     */
+    private static void scareMobFromAttacker(MobEntity mob, LivingEntity attacker) {
+        mob.setTarget(null);
+
+        double awayX = mob.getX() - attacker.getX();
+        double awayZ = mob.getZ() - attacker.getZ();
+        double horizontalLengthSquared = awayX * awayX + awayZ * awayZ;
+        if (horizontalLengthSquared < 1.0E-4D) {
+            forceMobDetour((ServerWorld) mob.getWorld(), mob);
+            return;
+        }
+
+        double scale = FRENZY_FEAR_RETREAT_DISTANCE / Math.sqrt(horizontalLengthSquared);
+        mob.getNavigation().startMovingTo(
+                mob.getX() + awayX * scale,
+                mob.getY(),
+                mob.getZ() + awayZ * scale,
+                FRENZY_FEAR_RETREAT_SPEED
+        );
     }
 
     /**

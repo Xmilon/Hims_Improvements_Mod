@@ -14,6 +14,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.xmilon.himproveme.enchantment.SelfSepukuEnchantmentHelper;
 import net.xmilon.himproveme.item.custom.EnderStaffItem;
 import net.xmilon.himproveme.item.custom.ability.SpecialAbilityItem;
 
@@ -57,6 +58,10 @@ public class SpecialAbilityManager {
 
         if (item instanceof EnderStaffItem) {
             return EnderStaffItem.tryTeleport(player, stack);
+        }
+
+        if (SelfSepukuEnchantmentHelper.tryUseAbility(player, stack)) {
+            return true;
         }
 
         if (!(item instanceof SpecialAbilityItem specialAbilityItem)) {

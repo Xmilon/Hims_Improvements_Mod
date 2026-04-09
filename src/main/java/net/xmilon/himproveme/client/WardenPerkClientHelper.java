@@ -86,7 +86,8 @@ public final class WardenPerkClientHelper {
             return originalFov;
         }
 
-        return Math.max(30.0D, originalFov - 30.0D);
+        double reduction = snapshot.controlChaos ? 18.0D : 10.0D;
+        return Math.max(50.0D, originalFov - reduction);
     }
 
     /**
@@ -97,7 +98,7 @@ public final class WardenPerkClientHelper {
             return 1.0D;
         }
 
-        return 0.2D;
+        return snapshot.controlChaos ? 0.45D : 0.70D;
     }
 
     /**
@@ -146,7 +147,7 @@ public final class WardenPerkClientHelper {
      * Returns true when sprinting should be blocked outright for the local player.
      */
     public static boolean shouldBlockSprint() {
-        return snapshot.active && snapshot.profile == AfflictionProfile.STUNNED;
+        return snapshot.active && snapshot.profile == AfflictionProfile.STUNNED && snapshot.controlChaos;
     }
 
     /**
