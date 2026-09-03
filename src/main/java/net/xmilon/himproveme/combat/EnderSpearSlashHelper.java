@@ -26,7 +26,7 @@ import java.util.List;
 public final class EnderSpearSlashHelper {
     public static final Identifier DOUBLE_ENDER_SPEAR_ID = Identifier.of(HimProveMe.MOD_ID, "double_ender_spear");
     public static final int ANIMATION_TICKS = 12;
-    public static final int COOLDOWN_TICKS = 14;
+    public static final int COOLDOWN_TICKS = 40;
     public static final byte MAIN_HAND_STATUS = 61;
     public static final byte OFF_HAND_STATUS = 62;
 

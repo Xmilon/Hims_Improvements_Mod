@@ -4,25 +4,73 @@
     "layer0": "himproveme:item/stone_dagger"
   },
   "display": {
-    "firstperson_righthand": {
-      "rotation": [0, -118, -70],
-      "translation": [1.15, 3.0, 1.0],
-      "scale": [0.82, 0.82, 0.82]
-    },
     "firstperson_lefthand": {
-      "rotation": [0, 118, 70],
-      "translation": [1.15, 3.0, 1.0],
-      "scale": [0.82, 0.82, 0.82]
+      "rotation": [
+        0.0,
+        118.0,
+        70.0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "translation": [
+        1.15,
+        3.0,
+        1.0
+      ]
     },
-    "thirdperson_righthand": {
-      "rotation": [0, -102, -74],
-      "translation": [0.2, 2.4, 0.9],
-      "scale": [0.82, 0.82, 0.82]
+    "firstperson_righthand": {
+      "rotation": [
+        0.0,
+        -118.0,
+        -70.0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "translation": [
+        1.15,
+        3.0,
+        1.0
+      ]
     },
     "thirdperson_lefthand": {
-      "rotation": [0, 102, 74],
-      "translation": [0.2, 2.4, 0.9],
-      "scale": [0.82, 0.82, 0.82]
+      "rotation": [
+        0.0,
+        102.0,
+        74.0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "translation": [
+        0.2,
+        2.4,
+        0.9
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0.0,
+        -102.0,
+        -74.0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "translation": [
+        0.2,
+        2.4,
+        0.9
+      ]
     }
   }
 }

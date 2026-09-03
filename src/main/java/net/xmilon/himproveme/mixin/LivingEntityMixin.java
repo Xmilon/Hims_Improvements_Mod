@@ -2,14 +2,17 @@ package net.xmilon.himproveme.mixin;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.xmilon.himproveme.access.DualWieldTargetAccess;
-import net.xmilon.himproveme.item.ModItem;
+import net.xmilon.himproveme.item.custom.GodlyElytraItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements DualWieldTargetAccess {
@@ -22,34 +25,38 @@ public abstract class LivingEntityMixin implements DualWieldTargetAccess {
     @Shadow
     protected float lastDamageTaken;
 
-    @Redirect(
-            method = "tickFallFlying",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z")
-    )
-    private boolean himproveme$allowGodlyElytraInFlightCheck(ItemStack stack, net.minecraft.item.Item item) {
-        return stack.isOf(Items.ELYTRA) || stack.isOf(ModItem.GODLY_ELYTRA);
+    @Unique
+    private boolean himproveme$godlyElytraShouldFly;
+
+    @Inject(method = "tickFallFlying", at = @At("HEAD"))
+    private void himproveme$captureGodlyElytraFallFlying(CallbackInfo ci) {
+        LivingEntity self = (LivingEntity)(Object)this;
+        ItemStack chest = self.getEquippedStack(EquipmentSlot.CHEST);
+        if (chest.getItem() instanceof GodlyElytraItem) {
+            himproveme$godlyElytraShouldFly = self.isFallFlying()
+                && !self.isOnGround()
+                && !self.hasVehicle()
+                && !self.hasStatusEffect(StatusEffects.LEVITATION);
+        } else {
+            himproveme$godlyElytraShouldFly = false;
+        }
     }
 
-    @Redirect(
-            method = "tickFallFlying",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ElytraItem;isUsable(Lnet/minecraft/item/ItemStack;)Z")
-    )
-    private boolean himproveme$allowGodlyElytraUsable(ItemStack stack) {
-        if (stack.isOf(ModItem.GODLY_ELYTRA)) {
-            return true;
-        }
-        return net.minecraft.item.ElytraItem.isUsable(stack);
-    }
+    @Inject(method = "tickFallFlying", at = @At("TAIL"))
+    private void himproveme$maintainGodlyElytraFallFlying(CallbackInfo ci) {
+        if (!himproveme$godlyElytraShouldFly) return;
 
-    @Redirect(
-            method = "tickFallFlying",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/EquipmentSlot;)V")
-    )
-    private void himproveme$preventGodlyElytraDamage(ItemStack stack, int amount, LivingEntity entity, EquipmentSlot slot) {
-        if (stack.isOf(ModItem.GODLY_ELYTRA)) {
-            return;
+        LivingEntity self = (LivingEntity)(Object)this;
+        if (self.getWorld().isClient) return;
+
+        if (self instanceof PlayerEntity player) {
+            player.startFallFlying();
         }
-        stack.damage(amount, entity, slot);
+
+        ItemStack chest = self.getEquippedStack(EquipmentSlot.CHEST);
+        if (chest.isDamaged()) {
+            chest.setDamage(0);
+        }
     }
 
     @Override

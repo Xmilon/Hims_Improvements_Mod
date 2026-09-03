@@ -12,11 +12,9 @@
 		"ClientPlayerEntityBlowgunMixin",
 		"ClientPlayerInteractionManagerDaggerMixin",
 		"ClientPlayerEntityPerkStateMixin",
-		"ClientPlayerEntityWardenSprintMixin",
 		"ClientPlayNetworkHandlerDualWieldMixin",
 		"ElytraFeatureRendererMixin",
 		"CreativeInventoryScreenPerkButtonMixin",
-		"GameRendererWardenEffectMixin",
 		"HandledScreenBundleAccessorMixin",
 		"HeldItemFeatureRendererEnderSpearMixin",
 		"HeldItemFeatureRendererInspectMixin",
@@ -28,15 +26,12 @@
 		"InventoryScreenCreativePerkMixin",
 		"InventoryScreenLevelingMixin",
 		"InventoryScreenTooltipMixin",
-		"KeyboardInputWardenEffectMixin",
 		"MerchantScreenVillagerPerkMixin",
 		"MinecraftClientDualWieldMixin",
-		"MouseWardenEffectMixin",
 		"ScreenPerkCloseMixin",
 		"RecipeBookWidgetPerkMixin",
 		"ClientPlayerEntityLevelingStateMixin",
-		"ClientPlayerEntityProneMixin",
-		"TooltipComponentMixin"
+		"ClientPlayerEntityProneMixin"
   ],
   "injectors": {
     "defaultRequire": 1

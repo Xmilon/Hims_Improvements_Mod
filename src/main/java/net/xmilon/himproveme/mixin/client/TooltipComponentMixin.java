@@ -14,7 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Environment(EnvType.CLIENT)
 @Mixin(TooltipComponent.class)
 public interface TooltipComponentMixin {
-    @Inject(method = "of(Lnet/minecraft/item/tooltip/TooltipData;)Lnet/minecraft/client/gui/tooltip/TooltipComponent;", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "of(Lnet/minecraft/item/tooltip/TooltipData;)Lnet/minecraft/client/gui/tooltip/TooltipComponent;",
+            at = @At("HEAD"),
+            cancellable = true,
+            remap = false
+    )
     private static void himproveme$createPreviewComponent(TooltipData data, CallbackInfoReturnable<TooltipComponent> cir) {
         if (data instanceof ContainerPreviewTooltipData previewData) {
             cir.setReturnValue(new ContainerPreviewTooltipComponent(previewData));

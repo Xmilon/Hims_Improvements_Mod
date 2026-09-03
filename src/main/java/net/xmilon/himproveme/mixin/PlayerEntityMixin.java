@@ -1,12 +1,12 @@
 package net.xmilon.himproveme.mixin;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
@@ -16,8 +16,8 @@ import net.minecraft.util.Hand;
 import net.xmilon.himproveme.access.DualWieldAttackAccess;
 import net.xmilon.himproveme.combat.DualWieldAttackContext;
 import net.xmilon.himproveme.combat.DualWieldCombatHelper;
-import net.xmilon.himproveme.item.ModItem;
 import net.xmilon.himproveme.item.custom.DaggerItem;
+import net.xmilon.himproveme.item.custom.GodlyElytraItem;
 import net.xmilon.himproveme.perk.PerkAccess;
 import net.xmilon.himproveme.prone.ProneNetworking;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,25 +55,6 @@ public abstract class PlayerEntityMixin implements DualWieldAttackAccess {
     private float himproveme$offhandSwingProgress;
     @Unique
     private int himproveme$bashAttackLockTicks;
-
-    @Redirect(
-            method = "checkFallFlying",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z")
-    )
-    private boolean himproveme$allowGodlyElytraInStartCheck(ItemStack stack, net.minecraft.item.Item item) {
-        return stack.isOf(Items.ELYTRA) || stack.isOf(ModItem.GODLY_ELYTRA);
-    }
-
-    @Redirect(
-            method = "checkFallFlying",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ElytraItem;isUsable(Lnet/minecraft/item/ItemStack;)Z")
-    )
-    private boolean himproveme$allowGodlyElytraUsable(ItemStack stack) {
-        if (stack.isOf(ModItem.GODLY_ELYTRA)) {
-            return true;
-        }
-        return net.minecraft.item.ElytraItem.isUsable(stack);
-    }
 
     @Inject(method = "updatePose", at = @At("HEAD"), cancellable = true)
     private void himproveme$lockPronePose(CallbackInfo ci) {
@@ -130,6 +111,20 @@ public abstract class PlayerEntityMixin implements DualWieldAttackAccess {
 
         himproveme$clearSafeLevitation();
         cir.setReturnValue(false);
+    }
+
+    @Inject(method = "checkFallFlying", at = @At("RETURN"), cancellable = true)
+    private void himproveme$checkGodlyElytraFallFlying(CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ()) return;
+
+        PlayerEntity self = (PlayerEntity)(Object)this;
+        if (self.isOnGround() || self.isFallFlying() || self.isTouchingWater() || self.hasStatusEffect(StatusEffects.LEVITATION)) return;
+
+        ItemStack chest = self.getEquippedStack(EquipmentSlot.CHEST);
+        if (chest.getItem() instanceof GodlyElytraItem) {
+            self.startFallFlying();
+            cir.setReturnValue(true);
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

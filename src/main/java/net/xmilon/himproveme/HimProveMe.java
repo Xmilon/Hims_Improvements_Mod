@@ -2,11 +2,9 @@ package net.xmilon.himproveme;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.xmilon.himproveme.HimProveMeGameRules;
 import net.xmilon.himproveme.block.ModBlocks;
 import net.xmilon.himproveme.command.HimProveMeCommands;
 import net.xmilon.himproveme.entity.ModEntities;
-import net.xmilon.himproveme.entity.client.DodoAnimations;
 import net.xmilon.himproveme.entity.custom.DodoEntity;
 import net.xmilon.himproveme.item.ModItem;
 import net.xmilon.himproveme.item.ModItemGroups;

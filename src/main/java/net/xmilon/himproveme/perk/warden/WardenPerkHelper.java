@@ -1,10 +1,7 @@
 package net.xmilon.himproveme.perk.warden;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -14,88 +11,57 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.xmilon.himproveme.HimProveMe;
 import net.xmilon.himproveme.effect.ModStatusEffects;
 import net.xmilon.himproveme.item.ModItem;
-import net.xmilon.himproveme.network.warden.WardenAfflictionSyncPayload;
 import net.xmilon.himproveme.network.warden.WardenSepukuPayload;
 import net.xmilon.himproveme.perk.PerkAccess;
 import net.xmilon.himproveme.perk.PerkInstanceState;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
-/**
- * Central runtime for the three Warden perks:
- * unlock gating, exclusive activation, affliction tracking, status effects, client sync and the shared health penalty.
- */
 public final class WardenPerkHelper {
     public static final Identifier WARDEN_BLEEDING = Identifier.of(HimProveMe.MOD_ID, "warden_bleeding");
     public static final Identifier WARDEN_STUNNED = Identifier.of(HimProveMe.MOD_ID, "warden_stunned");
     public static final Identifier WARDEN_FRENZY = Identifier.of(HimProveMe.MOD_ID, "warden_frenzy");
-    public static final List<Identifier> WARDEN_PERKS = List.of(WARDEN_BLEEDING, WARDEN_STUNNED, WARDEN_FRENZY);
+    public static final java.util.List<Identifier> WARDEN_PERKS = java.util.List.of(WARDEN_BLEEDING, WARDEN_STUNNED, WARDEN_FRENZY);
 
     private static final Identifier HEALTH_PENALTY_MODIFIER_ID = Identifier.of(HimProveMe.MOD_ID, "warden_perk_health_penalty");
     private static final double HEALTH_PENALTY = -4.0D;
-    private static final int DECAY_DELAY_TICKS = 200;
-    private static final int EFFECT_REFRESH_TICKS = 40;
-    private static final int BLEED_DAMAGE_INTERVAL_TICKS = 100;
-    private static final int CONTROL_ROLL_INTERVAL_TICKS = 20;
-    private static final int FRENZY_AXIS_INTERVAL_TICKS = 30;
-    private static final int SEPUKU_DURATION_TICKS = 36;
-    private static final float FRENZY_PROC_CHANCE = 0.04F;
-    private static final float FRENZY_SEPUKU_CHANCE = 0.30F;
-    private static final double FRENZY_FEAR_RETREAT_DISTANCE = 12.0D;
-    private static final double FRENZY_FEAR_RETREAT_SPEED = 1.25D;
-    private static final Map<Identifier, WorldRuntime> WORLD_RUNTIMES = new HashMap<>();
-    private static final Map<UUID, WardenAfflictionSyncPayload> LAST_SYNC_PAYLOADS = new HashMap<>();
+
+    private static final float BLEEDING_PROC_CHANCE = 0.15F;
+    private static final float CRUSHED_WILL_PROC_CHANCE = 0.20F;
+    private static final float CRUSHED_WILL_LOW_HP_PROC_CHANCE = 0.05F;
+    private static final float CRUSHED_WILL_HP_THRESHOLD = 30.0F;
+    private static final float SPIRIT_SHACKLE_PROC_CHANCE = 0.10F;
+
+    private static final int BLEEDING_DURATION_TICKS = 160;
+    private static final int CRUSHED_WILL_DURATION_TICKS = 160;
+    private static final int SPIRIT_SHACKLE_DURATION_TICKS = 340;
+
+    public static boolean himproveme$frenzyDamageGuard;
+    public static boolean himproveme$spiritShackleGuard;
 
     private WardenPerkHelper() {
     }
 
-    /**
-     * Registers the S2C payload types and the server tick hooks used by the Warden perk runtime.
-     */
     public static void register() {
-        PayloadTypeRegistry.playS2C().register(WardenAfflictionSyncPayload.ID, WardenAfflictionSyncPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(WardenSepukuPayload.ID, WardenSepukuPayload.CODEC);
-        ServerTickEvents.END_WORLD_TICK.register(WardenPerkHelper::tickWorld);
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncPlayer(handler.player, WardenAfflictionSyncPayload.inactive()));
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> LAST_SYNC_PAYLOADS.remove(handler.player.getUuid()));
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            WORLD_RUNTIMES.clear();
-            LAST_SYNC_PAYLOADS.clear();
-        });
     }
 
-    /**
-     * Returns true when the perk belongs to the mutually-exclusive Warden trio.
-     */
     public static boolean isWardenPerk(Identifier perkId) {
         return WARDEN_PERKS.contains(perkId);
     }
 
-    /**
-     * Returns true when the player currently has the required Warden Token equipped for unlock.
-     */
     public static boolean hasUnlockToken(ServerPlayerEntity player) {
         return player.getMainHandStack().isOf(ModItem.WARDEN_TOKEN);
     }
 
-    /**
-     * Consumes the Warden Token from the player's main hand once a Warden perk unlock succeeds.
-     */
     public static void consumeUnlockToken(ServerPlayerEntity player) {
         ItemStack stack = player.getMainHandStack();
         if (stack.isOf(ModItem.WARDEN_TOKEN)) {
@@ -103,9 +69,6 @@ public final class WardenPerkHelper {
         }
     }
 
-    /**
-     * Disables the other Warden perks in the same loadout when one of them gets enabled.
-     */
     public static void enforceExclusiveToggle(PerkInstanceState instance, Identifier enabledPerkId) {
         for (Identifier perkId : WARDEN_PERKS) {
             if (!perkId.equals(enabledPerkId) && instance.getLevel(perkId) > 0) {
@@ -114,69 +77,32 @@ public final class WardenPerkHelper {
         }
     }
 
-    /**
-     * Returns true when the player has one of the three Warden perks currently active in the selected loadout.
-     */
     public static boolean hasAnyActiveWardenPerk(PlayerEntity player) {
         return getActiveProfile(player).isPresent();
     }
 
-    /**
-     * Returns true once the selected loadout has unlocked at least one Warden perk, even if none of them are currently enabled.
-     */
     public static boolean hasAnyUnlockedWardenPerk(PlayerEntity player) {
         return PerkAccess.hasUnlocked(player, WARDEN_BLEEDING)
                 || PerkAccess.hasUnlocked(player, WARDEN_STUNNED)
                 || PerkAccess.hasUnlocked(player, WARDEN_FRENZY);
     }
 
-    /**
-     * Resolves the active affliction profile from the player's enabled Warden perk.
-     */
-    public static Optional<AfflictionProfile> getActiveProfile(PlayerEntity player) {
+    public static Optional<Identifier> getActiveProfile(PlayerEntity player) {
         if (PerkAccess.hasEffect(player, WARDEN_BLEEDING)) {
-            return Optional.of(AfflictionProfile.BLEEDING);
+            return Optional.of(WARDEN_BLEEDING);
         }
         if (PerkAccess.hasEffect(player, WARDEN_STUNNED)) {
-            return Optional.of(AfflictionProfile.STUNNED);
+            return Optional.of(WARDEN_STUNNED);
         }
         if (PerkAccess.hasEffect(player, WARDEN_FRENZY)) {
-            return Optional.of(AfflictionProfile.FRENZY);
+            return Optional.of(WARDEN_FRENZY);
         }
         return Optional.empty();
     }
 
-    /**
-     * Exposes the ephemeral affliction state for integrations such as Jade without persisting anything on the entity.
-     */
-    public static Optional<AfflictionView> getAfflictionView(LivingEntity target) {
-        if (!(target.getWorld() instanceof ServerWorld world)) {
-            return Optional.empty();
-        }
-
-        AfflictionState state = getRuntime(world).statesByTarget.get(target.getUuid());
-        if (state == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new AfflictionView(state.getProfile(), state.getBarPercent(), state.isEffectActive()));
-    }
-
-    /**
-     * Reuses the shared sepuku animation packet for any feature that wants the ritual pose without forcing a kill.
-     */
-    public static void playSepukuAnimation(LivingEntity target, int durationTicks) {
-        broadcastSepukuStart(target, durationTicks);
-    }
-
-    /**
-     * Keeps the shared max-health penalty in sync with the currently active Warden perk loadout.
-     */
     public static void applyHealthPenalty(PlayerEntity player) {
         EntityAttributeInstance maxHealth = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
-        if (maxHealth == null) {
-            return;
-        }
+        if (maxHealth == null) return;
 
         if (hasAnyActiveWardenPerk(player)) {
             maxHealth.updateModifier(new EntityAttributeModifier(HEALTH_PENALTY_MODIFIER_ID, HEALTH_PENALTY, EntityAttributeModifier.Operation.ADD_VALUE));
@@ -188,396 +114,69 @@ public final class WardenPerkHelper {
         }
     }
 
-    /**
-     * Handles the actual bar gain after a player lands a valid melee hit with an active Warden perk.
-     */
-    public static void onSuccessfulAttack(ServerPlayerEntity attacker, LivingEntity target, float dealtDamage, boolean critical) {
-        Optional<AfflictionProfile> profile = getActiveProfile(attacker);
-        if (profile.isEmpty() || dealtDamage <= 0.0F || !target.isAlive()) {
+    public static void onSuccessfulAttack(ServerPlayerEntity attacker, LivingEntity target, float dealtDamage) {
+        HimProveMe.LOGGER.info("onSuccessfulAttack called: attacker={}, target={}, dealt={}", attacker.getName().getString(), target.getName().getString(), dealtDamage);
+
+        if (dealtDamage <= 0.0F || !target.isAlive()) {
+            HimProveMe.LOGGER.info("onSuccessfulAttack early exit: dealt={}, alive={}", dealtDamage, target.isAlive());
             return;
         }
 
-        if (profile.get() == AfflictionProfile.FRENZY) {
-            tryApplyFrenzyProc(attacker, target);
-            return;
-        }
-
-        long currentTick = attacker.getServerWorld().getTime();
-        WorldRuntime runtime = getRuntime(attacker.getServerWorld());
-        AfflictionState currentState = runtime.statesByTarget.get(target.getUuid());
-        if (currentState == null) {
-            currentState = new AfflictionState(attacker.getUuid(), target.getUuid(), profile.get(), currentTick);
-            runtime.statesByTarget.put(target.getUuid(), currentState);
-        } else if (!currentState.getOwnerUuid().equals(attacker.getUuid()) || currentState.getProfile() != profile.get()) {
-            if (!currentState.canBeReplaced(attacker.getUuid(), profile.get(), currentTick)) {
-                return;
-            }
-
-            currentState = new AfflictionState(attacker.getUuid(), target.getUuid(), profile.get(), currentTick);
-            runtime.statesByTarget.put(target.getUuid(), currentState);
-        }
-
-        currentState.addBar(profile.get().computeGain(dealtDamage, target.getMaxHealth(), critical), currentTick);
-    }
-
-    /**
-     * Advances affliction decay, effect application, client sync and the sepuku countdown for one world.
-     */
-    private static void tickWorld(ServerWorld world) {
-        WorldRuntime runtime = getRuntime(world);
-        Set<UUID> syncedPlayers = new HashSet<>();
-        Iterator<Map.Entry<UUID, AfflictionState>> iterator = runtime.statesByTarget.entrySet().iterator();
-
-        while (iterator.hasNext()) {
-            AfflictionState state = iterator.next().getValue();
-            if (!(world.getEntity(state.getTargetUuid()) instanceof LivingEntity target) || !target.isAlive()) {
-                clearTargetEffects(targetOrNull(world, state.getTargetUuid()));
-                iterator.remove();
-                continue;
-            }
-
-            if (!tickState(world, target, state)) {
-                clearTargetEffects(target);
-                iterator.remove();
-                continue;
-            }
-
-            if (target instanceof ServerPlayerEntity player) {
-                syncPlayer(player, createPayload(state));
-                syncedPlayers.add(player.getUuid());
-            }
-        }
-
-        for (ServerPlayerEntity player : world.getPlayers()) {
-            if (syncedPlayers.contains(player.getUuid())) {
-                continue;
-            }
-            if (LAST_SYNC_PAYLOADS.containsKey(player.getUuid())) {
-                syncPlayer(player, WardenAfflictionSyncPayload.inactive());
-            }
-        }
-    }
-
-    /**
-     * Updates one afflicted entity for the current tick and returns false when the state should be discarded.
-     */
-    private static boolean tickState(ServerWorld world, LivingEntity target, AfflictionState state) {
-        if (!state.isSepukuTriggered() && world.getTime() >= state.getLastHitTick() + DECAY_DELAY_TICKS) {
-            state.decay(state.getProfile().getDecayPerTick(state.isEffectActive()));
-        }
-
-        return switch (state.getProfile()) {
-            case BLEEDING -> tickBleeding(world, target, state);
-            case STUNNED -> tickStunned(world, target, state);
-            case FRENZY -> tickFrenzy(world, target, state);
-        };
-    }
-
-    /**
-     * Applies the bleeding threshold, the periodic health drain and the visual marker effect.
-     */
-    private static boolean tickBleeding(ServerWorld world, LivingEntity target, AfflictionState state) {
-        boolean active = state.getProfile().shouldTrigger(state.getBarPercent())
-                || (state.isEffectActive() && state.getProfile().shouldRemainActive(state.getBarPercent()));
-        state.setEffectActive(active);
-
-        if (!active) {
-            target.removeStatusEffect(ModStatusEffects.BLEEDING);
-            return state.getBarPercent() > 0.05F;
-        }
-
-        refreshStatusEffect(target, ModStatusEffects.BLEEDING);
-        if (world.getTime() >= state.getNextDotTick()) {
-            target.damage(world.getDamageSources().magic(), 2.0F);
-            state.setNextDotTick(world.getTime() + BLEED_DAMAGE_INTERVAL_TICKS);
-        }
-        return true;
-    }
-
-    /**
-     * Applies the stunned threshold and drives the short-lived control disruption for players and mobs.
-     */
-    private static boolean tickStunned(ServerWorld world, LivingEntity target, AfflictionState state) {
-        boolean active = state.getProfile().shouldTrigger(state.getBarPercent())
-                || (state.isEffectActive() && state.getProfile().shouldRemainActive(state.getBarPercent()));
-        state.setEffectActive(active);
-
-        if (!active) {
-            state.clearControlDisruption();
-            target.removeStatusEffect(ModStatusEffects.STUNNED);
-            return state.getBarPercent() > 0.05F;
-        }
-
-        refreshStatusEffect(target, ModStatusEffects.STUNNED);
-        if (state.getBarPercent() >= 100.0F) {
-            target.setSprinting(false);
-        }
-
-        if (state.getBarPercent() >= 100.0F && world.getTime() >= state.getNextControlShuffleTick()) {
-            if (target instanceof ServerPlayerEntity) {
-                state.shuffleMovementMapping(world.getRandom());
-            } else if (target instanceof MobEntity mob) {
-                randomizeMobTarget(world, mob);
-            }
-            state.setNextControlShuffleTick(world.getTime() + CONTROL_ROLL_INTERVAL_TICKS);
-        }
-        return true;
-    }
-
-    /**
-     * Applies Frenzy hallucination/input pressure and starts the sepuku sequence once the bar reaches its trigger threshold.
-     */
-    private static boolean tickFrenzy(ServerWorld world, LivingEntity target, AfflictionState state) {
-        state.setEffectActive(state.getProfile().shouldRemainActive(state.getBarPercent()) || state.isSepukuTriggered());
-        if (!state.isEffectActive()) {
-            state.clearControlDisruption();
-            target.removeStatusEffect(ModStatusEffects.FRENZY);
-            return false;
-        }
-
-        refreshStatusEffect(target, ModStatusEffects.FRENZY);
-
-        if (state.isSepukuTriggered()) {
-            freezeTarget(target);
-            state.decrementSepukuTicks();
-            if (state.getSepukuTicksRemaining() <= 0) {
-                killForOwner(world, target, state.getOwnerUuid());
-                return false;
-            }
-            return true;
-        }
-
-        if (target instanceof ServerPlayerEntity) {
-            if (world.getTime() >= state.getNextControlShuffleTick()) {
-                state.rollFrenzyAxis(world.getRandom());
-                state.setNextControlShuffleTick(world.getTime() + FRENZY_AXIS_INTERVAL_TICKS);
-            }
-        } else if (target instanceof MobEntity mob && world.getTime() >= state.getNextControlShuffleTick()) {
-            forceMobDetour(world, mob);
-            state.setNextControlShuffleTick(world.getTime() + FRENZY_AXIS_INTERVAL_TICKS);
-        }
-
-        if (state.getProfile().shouldTrigger(state.getBarPercent())) {
-            state.beginSepuku(SEPUKU_DURATION_TICKS);
-            broadcastSepukuStart(target, SEPUKU_DURATION_TICKS);
-        }
-        return true;
-    }
-
-    /**
-     * Refreshes the icon-only status effect without showing particles every tick.
-     */
-    private static void refreshStatusEffect(LivingEntity target, RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect) {
-        target.addStatusEffect(new StatusEffectInstance(effect, EFFECT_REFRESH_TICKS, 0, true, false, true));
-    }
-
-    /**
-     * Removes all three custom Warden perk status effects from a target.
-     */
-    private static void clearTargetEffects(LivingEntity target) {
-        if (target == null) {
-            return;
-        }
-        target.removeStatusEffect(ModStatusEffects.BLEEDING);
-        target.removeStatusEffect(ModStatusEffects.STUNNED);
-        target.removeStatusEffect(ModStatusEffects.FRENZY);
-    }
-
-    /**
-     * Chooses a random nearby living target for a stunned mob or makes it stumble toward a random point.
-     */
-    private static void randomizeMobTarget(ServerWorld world, MobEntity mob) {
-        List<LivingEntity> nearbyTargets = world.getNonSpectatingEntities(LivingEntity.class, mob.getBoundingBox().expand(8.0D));
-        nearbyTargets.removeIf(candidate -> candidate == mob || !candidate.isAlive());
-
-        if (!nearbyTargets.isEmpty()) {
-            LivingEntity newTarget = nearbyTargets.get(world.getRandom().nextInt(nearbyTargets.size()));
-            mob.setTarget(newTarget);
-            mob.getNavigation().startMovingTo(newTarget, 1.0D);
-            return;
-        }
-
-        forceMobDetour(world, mob);
-    }
-
-    /**
-     * Gives the Frenzy perk a rare direct proc instead of another bar-based affliction.
-     */
-    private static void tryApplyFrenzyProc(ServerPlayerEntity attacker, LivingEntity target) {
-        if (!(target instanceof MobEntity mob)) {
-            return;
-        }
+        Identifier activePerk = getActiveProfile(attacker).orElse(null);
+        HimProveMe.LOGGER.info("onSuccessfulAttack activePerk={}", activePerk);
+        if (activePerk == null) return;
 
         ServerWorld world = attacker.getServerWorld();
-        if (world.getRandom().nextFloat() >= FRENZY_PROC_CHANCE) {
-            return;
-        }
+        float roll = world.getRandom().nextFloat();
+        HimProveMe.LOGGER.info("onSuccessfulAttack roll={}", roll);
 
-        if (world.getRandom().nextFloat() < FRENZY_SEPUKU_CHANCE) {
-            startFrenzySepuku(world, target, attacker.getUuid());
-            return;
-        }
-
-        scareMobFromAttacker(mob, attacker);
-    }
-
-    /**
-     * Replaces any existing affliction on the target with the ritual self-strike countdown.
-     */
-    private static void startFrenzySepuku(ServerWorld world, LivingEntity target, UUID ownerUuid) {
-        WorldRuntime runtime = getRuntime(world);
-        AfflictionState existingState = runtime.statesByTarget.get(target.getUuid());
-        if (existingState != null && existingState.isSepukuTriggered()) {
-            return;
-        }
-
-        clearTargetEffects(target);
-
-        AfflictionState sepukuState = new AfflictionState(ownerUuid, target.getUuid(), AfflictionProfile.FRENZY, world.getTime());
-        sepukuState.beginSepuku(SEPUKU_DURATION_TICKS);
-        runtime.statesByTarget.put(target.getUuid(), sepukuState);
-
-        if (target instanceof MobEntity mob) {
-            mob.setTarget(null);
-            mob.getNavigation().stop();
-        }
-
-        broadcastSepukuStart(target, SEPUKU_DURATION_TICKS);
-    }
-
-    /**
-     * Sends a mob running away from the attacker for a moment so the Frenzy proc reads as fear rather than damage.
-     */
-    private static void scareMobFromAttacker(MobEntity mob, LivingEntity attacker) {
-        mob.setTarget(null);
-
-        double awayX = mob.getX() - attacker.getX();
-        double awayZ = mob.getZ() - attacker.getZ();
-        double horizontalLengthSquared = awayX * awayX + awayZ * awayZ;
-        if (horizontalLengthSquared < 1.0E-4D) {
-            forceMobDetour((ServerWorld) mob.getWorld(), mob);
-            return;
-        }
-
-        double scale = FRENZY_FEAR_RETREAT_DISTANCE / Math.sqrt(horizontalLengthSquared);
-        mob.getNavigation().startMovingTo(
-                mob.getX() + awayX * scale,
-                mob.getY(),
-                mob.getZ() + awayZ * scale,
-                FRENZY_FEAR_RETREAT_SPEED
-        );
-    }
-
-    /**
-     * Makes a Frenzied mob wander off-course for a moment instead of following its normal path.
-     */
-    private static void forceMobDetour(ServerWorld world, MobEntity mob) {
-        double offsetX = (world.getRandom().nextDouble() - 0.5D) * 10.0D;
-        double offsetZ = (world.getRandom().nextDouble() - 0.5D) * 10.0D;
-        mob.getNavigation().startMovingTo(mob.getX() + offsetX, mob.getY(), mob.getZ() + offsetZ, 1.0D);
-    }
-
-    /**
-     * Locks a target in place during the sepuku animation so the rendered pose reads clearly.
-     */
-    private static void freezeTarget(LivingEntity target) {
-        target.setVelocity(0.0D, 0.0D, 0.0D);
-        target.velocityModified = true;
-        target.setSprinting(false);
-        if (target instanceof MobEntity mob) {
-            mob.getNavigation().stop();
+        if (activePerk == WARDEN_BLEEDING) {
+            HimProveMe.LOGGER.info("BLEEDING proc check: roll={} vs chance={}", roll, BLEEDING_PROC_CHANCE);
+            if (roll < BLEEDING_PROC_CHANCE) {
+                HimProveMe.LOGGER.info("APPLYING BLEEDING to target {}", target.getName().getString());
+                target.addStatusEffect(new StatusEffectInstance(ModStatusEffects.BLEEDING, BLEEDING_DURATION_TICKS, 0, true, false, true));
+            }
+        } else if (activePerk == WARDEN_STUNNED) {
+            float crushedWillChance = target.getMaxHealth() > CRUSHED_WILL_HP_THRESHOLD ? CRUSHED_WILL_LOW_HP_PROC_CHANCE : CRUSHED_WILL_PROC_CHANCE;
+            HimProveMe.LOGGER.info("CRUSHED WILL proc check: roll={} vs chance={} (targetMaxHP={})", roll, crushedWillChance, target.getMaxHealth());
+            if (roll < crushedWillChance) {
+                HimProveMe.LOGGER.info("APPLYING CRUSHED WILL to target {}", target.getName().getString());
+                target.addStatusEffect(new StatusEffectInstance(ModStatusEffects.STUNNED, CRUSHED_WILL_DURATION_TICKS, 0, true, false, true));
+                if (target instanceof MobEntity mob) {
+                    fleeFromAttacker(mob, attacker);
+                }
+            }
+        } else if (activePerk == WARDEN_FRENZY) {
+            HimProveMe.LOGGER.info("SPIRIT SHACKLE proc check: roll={} vs chance={}", roll, SPIRIT_SHACKLE_PROC_CHANCE);
+            if (roll < SPIRIT_SHACKLE_PROC_CHANCE) {
+                HimProveMe.LOGGER.info("APPLYING SPIRIT SHACKLE to target {}", target.getName().getString());
+                target.addStatusEffect(new StatusEffectInstance(ModStatusEffects.FRENZY, SPIRIT_SHACKLE_DURATION_TICKS, 0, true, false, true));
+            }
         }
     }
 
-    /**
-     * Attempts to attribute the finishing blow to the player who filled the bar while still guaranteeing the kill.
-     */
-    private static void killForOwner(ServerWorld world, LivingEntity target, UUID ownerUuid) {
-        if (world.getServer().getPlayerManager().getPlayer(ownerUuid) instanceof ServerPlayerEntity owner) {
-            target.setAttacker(owner);
-            target.damage(owner.getDamageSources().playerAttack(owner), Float.MAX_VALUE);
-        } else {
-            target.damage(world.getDamageSources().genericKill(), Float.MAX_VALUE);
-        }
-
-        if (target.isAlive()) {
-            target.kill();
-        }
-    }
-
-    /**
-     * Broadcasts the sepuku animation start to all tracking players and the victim when it is also a player.
-     */
-    private static void broadcastSepukuStart(LivingEntity target, int durationTicks) {
+    public static void playSepukuAnimation(LivingEntity target, int durationTicks) {
         Collection<ServerPlayerEntity> recipients = new HashSet<>(PlayerLookup.tracking(target));
         if (target instanceof ServerPlayerEntity playerTarget) {
             recipients.add(playerTarget);
         }
-
         WardenSepukuPayload payload = new WardenSepukuPayload(target.getUuid(), durationTicks);
         for (ServerPlayerEntity recipient : recipients) {
             ServerPlayNetworking.send(recipient, payload);
         }
     }
 
-    /**
-     * Builds the client snapshot for an afflicted player.
-     */
-    private static WardenAfflictionSyncPayload createPayload(AfflictionState state) {
-        boolean controlChaos = state.getProfile() == AfflictionProfile.STUNNED && state.getBarPercent() >= 100.0F;
-        return new WardenAfflictionSyncPayload(
-                true,
-                state.getProfile().ordinal(),
-                state.getBarPercent(),
-                controlChaos,
-                state.getMovementMapping(),
-                state.isInvertForwardAxis(),
-                state.isInvertSidewaysAxis(),
-                state.getSepukuTicksRemaining()
-        );
-    }
-
-    /**
-     * Sends a payload only when the snapshot changed so the client receives stable, low-noise updates.
-     */
-    private static void syncPlayer(ServerPlayerEntity player, WardenAfflictionSyncPayload payload) {
-        WardenAfflictionSyncPayload previousPayload = LAST_SYNC_PAYLOADS.get(player.getUuid());
-        if (payload.equals(previousPayload)) {
-            return;
+    private static void fleeFromAttacker(MobEntity mob, LivingEntity attacker) {
+        mob.setTarget(null);
+        double awayX = mob.getX() - attacker.getX();
+        double awayZ = mob.getZ() - attacker.getZ();
+        double length = Math.sqrt(awayX * awayX + awayZ * awayZ);
+        if (length < 1.0E-4D) {
+            awayX = mob.getRandom().nextDouble() - 0.5D;
+            awayZ = mob.getRandom().nextDouble() - 0.5D;
+            length = Math.sqrt(awayX * awayX + awayZ * awayZ);
         }
-
-        ServerPlayNetworking.send(player, payload);
-        if (payload.active()) {
-            LAST_SYNC_PAYLOADS.put(player.getUuid(), payload);
-        } else {
-            LAST_SYNC_PAYLOADS.remove(player.getUuid());
-        }
-    }
-
-    /**
-     * Returns the lazy-created affliction runtime for a world.
-     */
-    private static WorldRuntime getRuntime(ServerWorld world) {
-        return WORLD_RUNTIMES.computeIfAbsent(world.getRegistryKey().getValue(), ignored -> new WorldRuntime());
-    }
-
-    /**
-     * Helper that tolerates already-removed targets during cleanup.
-     */
-    private static LivingEntity targetOrNull(ServerWorld world, UUID targetUuid) {
-        return world.getEntity(targetUuid) instanceof LivingEntity living ? living : null;
-    }
-
-    /**
-     * Per-world ephemeral affliction state keyed by target UUID.
-     */
-    private static final class WorldRuntime {
-        private final Map<UUID, AfflictionState> statesByTarget = new HashMap<>();
-    }
-
-    /**
-     * Immutable server snapshot used by compatibility providers that need read-only access to the current bar state.
-     */
-    public record AfflictionView(AfflictionProfile profile, float barPercent, boolean effectActive) {
+        double scale = 16.0D / length;
+        mob.getNavigation().startMovingTo(mob.getX() + awayX * scale, mob.getY(), mob.getZ() + awayZ * scale, 1.5D);
     }
 }
